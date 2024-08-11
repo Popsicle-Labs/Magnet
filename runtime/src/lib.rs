@@ -1305,7 +1305,7 @@ mod benches {
 		[cumulus_pallet_xcmp_queue, XcmpQueue]
 		[pallet_bulk, BulkPallet]
 		[pallet_on_demand, OrderPallet]
-		[pallet_move, MoveModule]
+		// [pallet_move, MoveModule]
 		[pallet_multisig, Multisig]
 		[pallet_proxy, Proxy]
 	);
