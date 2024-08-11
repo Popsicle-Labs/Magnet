@@ -262,7 +262,7 @@ runtime-benchmarks = [
 	"pallet-ranked-collective/runtime-benchmarks",
 	"pallet-scheduler/runtime-benchmarks",
 	"pallet-contracts/runtime-benchmarks",
-	#"pallet-move/runtime-benchmarks",
+	"pallet-move/runtime-benchmarks",
 	"pallet-multisig/runtime-benchmarks",
 	"pallet-proxy/runtime-benchmarks",
 	"pallet-bulk/runtime-benchmarks",
