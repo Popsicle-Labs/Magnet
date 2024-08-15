@@ -229,7 +229,7 @@ impl ExtBuilder {
 		crate::GenesisConfig::<Test> {
 			slot_width: 3,
 			price_limit: 200000000,
-			gas_threshold: Perbill::one(),
+			gas_threshold: 1,
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();
