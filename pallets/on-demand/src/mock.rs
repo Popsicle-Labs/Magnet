@@ -226,13 +226,9 @@ impl ExtBuilder {
 		pallet_balances::GenesisConfig::<Test> { balances: self.balances }
 			.assimilate_storage(&mut t)
 			.unwrap();
-		crate::GenesisConfig::<Test> {
-			slot_width: 3,
-			price_limit: 200000000,
-			gas_threshold: 1,
-		}
-		.assimilate_storage(&mut t)
-		.unwrap();
+		crate::GenesisConfig::<Test> { slot_width: 3, price_limit: 200000000, gas_threshold: 1 }
+			.assimilate_storage(&mut t)
+			.unwrap();
 		pallet_aura::GenesisConfig::<Test> { authorities: vec![Alice.public().into()] }
 			.assimilate_storage(&mut t)
 			.unwrap();
