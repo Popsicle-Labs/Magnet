@@ -55,6 +55,7 @@ use sp_runtime::{
 use std::{cmp::Ordering, net::SocketAddr};
 use std::{error::Error, fmt::Debug, sync::Arc};
 use submit_order::{build_rpc_for_submit_order, SubmitOrderError};
+use subxt::backend::{legacy::LegacyRpcMethods, rpc::RpcClient};
 use subxt::{OnlineClient, PolkadotConfig};
 
 /// Order type
@@ -143,11 +144,13 @@ async fn reach_txpool_threshold<P, Block, ExPool, Balance>(
 	height: RelayBlockNumber,
 	snap_txs: Vec<H256>,
 	core_price: Balance,
+	relay_decimal: u64,
+	parachain_decimal: u64,
 ) -> Option<(bool, OrderType)>
 where
 	Block: BlockT,
 	P: ProvideRuntimeApi<Block> + UsageProvider<Block>,
-	Balance: Codec + MaybeDisplay + 'static + Debug + AtLeast32BitUnsigned + Copy,
+	Balance: Codec + MaybeDisplay + 'static + Debug + AtLeast32BitUnsigned + Copy + From<u128>,
 	P::Api: TransactionPaymentApi<Block, Balance>
 		+ OrderRuntimeApi<Block, Balance>
 		+ OnRelayChainApi<Block>,
@@ -170,14 +173,19 @@ where
 			.ok()?;
 		all_gas_value = query_fee.final_fee().add(all_gas_value);
 		if transaction_pool.status().ready != 0 {
+			let new_core_price = if parachain_decimal >= relay_decimal {
+				core_price.saturating_mul(
+					(10 as u128).pow((parachain_decimal - relay_decimal) as u32).into(),
+				)
+			} else {
+				core_price.checked_div(
+					&(10 as u128).pow((parachain_decimal - relay_decimal) as u32).into(),
+				)?
+			};
 			// Converted to a precision of 18
 			is_place_order = parachain
 				.runtime_api()
-				.reach_txpool_threshold(
-					block_hash,
-					all_gas_value,
-					core_price.saturating_mul(1_000_000u32.into()),
-				)
+				.reach_txpool_threshold(block_hash, all_gas_value, new_core_price)
 				.ok()?;
 		}
 		log::info!(
@@ -253,6 +261,8 @@ async fn handle_relaychain_stream<P, Block, ExPool, Balance>(
 	order_record: Arc<Mutex<OrderRecord>>,
 	transaction_pool: Arc<ExPool>,
 	url: String,
+	relay_decimal: u64,
+	parachain_decimal: u64,
 ) -> Result<(), Box<dyn Error>>
 where
 	Block: BlockT,
@@ -322,7 +332,15 @@ where
 	// get on demand core price
 	let max_amount = parachain.runtime_api().order_max_amount(hash)?;
 	let p_spot_price = get_spot_price::<Balance>(relay_chain.clone(), p_hash).await;
-	let spot_price = if let Some(pot_price) = p_spot_price { pot_price } else { max_amount };
+	let (spot_price, place_price) = if let Some(spot_price) = p_spot_price {
+		if spot_price > max_amount {
+			(spot_price, spot_price)
+		} else {
+			(spot_price, max_amount)
+		}
+	} else {
+		(max_amount, max_amount)
+	};
 	// Check whether the gas of the transaction pool has reached the spot price threshold.
 	let mut order_record_local = order_record.lock().await;
 
@@ -332,6 +350,8 @@ where
 		height,
 		order_record_local.txs.clone(),
 		spot_price,
+		relay_decimal,
+		parachain_decimal,
 	)
 	.await;
 	let mut can_order = false;
@@ -359,7 +379,7 @@ where
 					order_record_local.author_pub = Some(author);
 					order_record_local.txs = get_txs(transaction_pool).await;
 					let order_result =
-						try_place_order::<Balance>(keystore, para_id, url, spot_price).await;
+						try_place_order::<Balance>(keystore, para_id, url, place_price).await;
 					order_record_local.order_status = OrderStatus::Order;
 					if order_result.is_ok() {
 						log::info!("===========place order successfully",);
@@ -401,6 +421,7 @@ async fn relay_chain_notification<P, R, Block, ExPool, Balance>(
 	order_record: Arc<Mutex<OrderRecord>>,
 	transaction_pool: Arc<ExPool>,
 	url: String,
+	parachain_decimal: u64,
 ) where
 	R: RelayChainInterface + Clone,
 	Block: BlockT,
@@ -419,6 +440,14 @@ async fn relay_chain_notification<P, R, Block, ExPool, Balance>(
 		+ OnRelayChainApi<Block>,
 	ExPool: MaintainedTransactionPool<Block = Block, Hash = <Block as BlockT>::Hash> + 'static,
 {
+	let rpc_client = RpcClient::from_url(url.clone()).await.expect("rpc connect failed");
+	let rpc = LegacyRpcMethods::<PolkadotConfig>::new(rpc_client.clone());
+	let properties = rpc.system_properties().await.expect("can't get relaychain properties");
+	let relay_decimal = properties
+		.get("tokenDecimals")
+		.and_then(|v| v.as_u64())
+		.expect("can't get relaychain token decimal");
+
 	let new_best_heads = match new_best_heads(relay_chain.clone(), para_id).await {
 		Ok(best_heads_stream) => best_heads_stream.fuse(),
 		Err(_err) => {
@@ -431,7 +460,7 @@ async fn relay_chain_notification<P, R, Block, ExPool, Balance>(
 			h = new_best_heads.next() => {
 				match h {
 					Some((height, head, hash)) => {
-						let _ = handle_relaychain_stream(head,height, &*parachain,keystore.clone(), relay_chain.clone(), hash, para_id, order_record.clone(),transaction_pool.clone(), url.clone()).await;
+						let _ = handle_relaychain_stream(head,height, &*parachain,keystore.clone(), relay_chain.clone(), hash, para_id, order_record.clone(),transaction_pool.clone(), url.clone(), relay_decimal, parachain_decimal).await;
 					},
 					None => {
 						return;
@@ -449,7 +478,7 @@ pub async fn ondemand_event_task(
 ) -> Result<(), Box<dyn Error>> {
 	// Get the final block of the relaychain through subxt.
 
-	let api = OnlineClient::<PolkadotConfig>::from_url(rpc_url).await?;
+	let api = OnlineClient::<PolkadotConfig>::from_url(rpc_url.clone()).await?;
 
 	let mut blocks_sub = api.blocks().subscribe_best().await?;
 
@@ -497,6 +526,7 @@ pub async fn run_on_demand_task<P, R, Block, ExPool, Balance>(
 	order_record: Arc<Mutex<OrderRecord>>,
 	transaction_pool: Arc<ExPool>,
 	url: String,
+	parachain_decimal: u64,
 ) where
 	R: RelayChainInterface + Clone,
 	Block: BlockT,
@@ -523,6 +553,7 @@ pub async fn run_on_demand_task<P, R, Block, ExPool, Balance>(
 		order_record.clone(),
 		transaction_pool,
 		url.clone(),
+		parachain_decimal,
 	);
 	let event_notification = event_notification(para_id, url, order_record);
 	select! {
@@ -540,6 +571,7 @@ pub fn spawn_on_demand_order<T, R, ExPool, Block, Balance>(
 	keystore: KeystorePtr,
 	order_record: Arc<Mutex<OrderRecord>>,
 	relay_rpc: Option<SocketAddr>,
+	parachain_decimal: u64,
 ) -> sc_service::error::Result<()>
 where
 	Block: BlockT,
@@ -571,6 +603,7 @@ where
 		order_record,
 		transaction_pool.clone(),
 		url,
+		parachain_decimal,
 	);
 	task_manager.spawn_essential_handle().spawn_blocking(
 		"on demand order task",

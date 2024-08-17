@@ -141,7 +141,7 @@ pub async fn relaychain_spot_price(
 			.transpose()
 			.ok()??
 			.traffic;
-		FixedU128::from(traffic.0)
+		FixedU128::from_rational(traffic.0, FixedU128::accuracy())
 	};
 	// configuration pallet version
 	let configuration_version_storage =

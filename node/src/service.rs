@@ -241,6 +241,12 @@ async fn start_node_impl(
 	let backend = params.backend.clone();
 	let mut task_manager = params.task_manager;
 	let relay_rpc = polkadot_config.rpc_addr;
+	let parachain_decimal = parachain_config
+		.chain_spec
+		.properties()
+		.get("tokenDecimals")
+		.and_then(|v| v.as_u64())
+		.expect("can't get token decimal");
 
 	let (relay_chain_interface, collator_key) = build_relay_chain_interface(
 		polkadot_config,
@@ -466,6 +472,7 @@ async fn start_node_impl(
 			params.keystore_container.keystore(),
 			order_record.clone(),
 			relay_rpc,
+			parachain_decimal,
 		)?;
 		let bulk_mem_record =
 			Arc::new(Mutex::new(BulkMemRecord { coretime_para_height: 0, items: Vec::new() }));
