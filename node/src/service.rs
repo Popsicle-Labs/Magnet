@@ -4,7 +4,7 @@
 use sp_core::U256;
 use std::{path::Path, sync::Arc, time::Duration};
 
-use cumulus_client_cli::CollatorOptions;
+use cumulus_client_cli::{CollatorOptions, RelayChainMode};
 // Local Runtime Types
 use parachain_magnet_runtime::{
 	opaque::{Block, Hash},
@@ -240,13 +240,23 @@ async fn start_node_impl(
 	let client = params.client.clone();
 	let backend = params.backend.clone();
 	let mut task_manager = params.task_manager;
-	let relay_rpc = polkadot_config.rpc_addr;
 	let parachain_decimal = parachain_config
 		.chain_spec
 		.properties()
 		.get("tokenDecimals")
 		.and_then(|v| v.as_u64())
 		.expect("can't get token decimal");
+	let relay_rpc =
+		if let RelayChainMode::ExternalRpc(urls) = collator_options.clone().relay_chain_mode {
+			urls[0].as_str().to_string()
+		} else {
+			let rpc_addr = polkadot_config.rpc_addr;
+			let mut url = String::from("ws://");
+			url.push_str(
+				&rpc_addr.expect("Should set rpc address for submit order extrinic").to_string(),
+			);
+			url
+		};
 
 	let (relay_chain_interface, collator_key) = build_relay_chain_interface(
 		polkadot_config,

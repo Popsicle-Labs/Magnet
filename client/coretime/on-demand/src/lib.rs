@@ -570,7 +570,7 @@ pub fn spawn_on_demand_order<T, R, ExPool, Block, Balance>(
 	task_manager: &TaskManager,
 	keystore: KeystorePtr,
 	order_record: Arc<Mutex<OrderRecord>>,
-	relay_rpc: Option<SocketAddr>,
+	relay_rpc: String,
 	parachain_decimal: u64,
 ) -> sc_service::error::Result<()>
 where
@@ -592,9 +592,6 @@ where
 		+ TransactionPaymentApi<Block, Balance>
 		+ OnRelayChainApi<Block>,
 {
-	let mut url = String::from("ws://");
-	url.push_str(&relay_rpc.expect("Should set rpc address for submit order extrinic").to_string());
-
 	let on_demand_order_task = run_on_demand_task(
 		para_id,
 		parachain.clone(),
@@ -602,7 +599,7 @@ where
 		keystore,
 		order_record,
 		transaction_pool.clone(),
-		url,
+		relay_rpc,
 		parachain_decimal,
 	);
 	task_manager.spawn_essential_handle().spawn_blocking(
