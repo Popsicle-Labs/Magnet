@@ -18,11 +18,20 @@
 
 //Modified by Alex Wang 2023/11
 
-use frame_support::traits::{MapSuccess, TryMapSuccess};
-use sp_runtime::traits::{CheckedReduceBy, ConstU16, Replace};
-
-use super::*;
-use crate::{CENTS, DAYS};
+use crate::{
+	governance::{
+		origins, Fellows, FellowshipAdmin, FellowshipExperts, FellowshipMasters, MagnetToStakingPot,
+	},
+	weights, Balance, Balances, BlockNumber, FellowshipReferenda, Perbill, Preimage, Runtime,
+	RuntimeCall, RuntimeEvent, RuntimeOrigin, Scheduler, CENTS, DAYS, MINUTES,
+};
+use frame_support::parameter_types;
+use frame_support::traits::{EitherOf, MapSuccess, TryMapSuccess};
+use sp_core::ConstU32;
+use sp_runtime::{
+	traits::{CheckedReduceBy, ConstU16, Replace, ReplaceWithDefault},
+	DispatchError,
+};
 
 parameter_types! {
 	pub const AlarmInterval: BlockNumber = 1;
@@ -317,6 +326,11 @@ pub type FellowshipCollectiveInstance = pallet_ranked_collective::Instance1;
 impl pallet_ranked_collective::Config<FellowshipCollectiveInstance> for Runtime {
 	type WeightInfo = weights::pallet_ranked_collective::WeightInfo<Self>;
 	type RuntimeEvent = RuntimeEvent;
+	// Adding is by any of:
+	// - Root.
+	// - the FellowshipAdmin origin.
+	// - a Fellowship origin.
+	type AddOrigin = MapSuccess<Self::PromoteOrigin, ReplaceWithDefault<()>>;
 	// Promotion is by any of:
 	// - Root can demote arbitrarily.
 	// - the FellowshipAdmin origin (i.e. token holder referendum);
@@ -328,6 +342,13 @@ impl pallet_ranked_collective::Config<FellowshipCollectiveInstance> for Runtime 
 			TryMapSuccess<origins::EnsureFellowship, CheckedReduceBy<ConstU16<1>>>,
 		>,
 	>;
+	// Demotion is by any of:
+	// - Root can demote arbitrarily.
+	// - the FellowshipAdmin origin (i.e. token holder referendum);
+	//
+	// The maximum value of `u16` set as a success value for the root to ensure the benchmarks will
+	// pass.
+	type RemoveOrigin = Self::DemoteOrigin;
 	// Demotion is by any of:
 	// - Root can demote arbitrarily.
 	// - the FellowshipAdmin origin (i.e. token holder referendum);
@@ -348,6 +369,7 @@ impl pallet_ranked_collective::Config<FellowshipCollectiveInstance> for Runtime 
 	type MinRankOfClass = sp_runtime::traits::Identity;
 	type MemberSwappedHandler = ();
 	type VoteWeight = pallet_ranked_collective::Geometric;
+	type MaxMemberCount = ();
 	#[cfg(feature = "runtime-benchmarks")]
 	type BenchmarkSetup = ();
 }

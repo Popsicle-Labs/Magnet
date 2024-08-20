@@ -33,7 +33,7 @@ use frame_support::{
 	ensure,
 	pallet_prelude::*,
 	traits::{
-		tokens::{Fortitude, Precision},
+		tokens::{Fortitude, Precision, Preservation},
 		Currency, IsType,
 	},
 	transactional,
@@ -412,6 +412,7 @@ pub mod pallet {
 				asset_id.clone(),
 				&who,
 				amount,
+				Preservation::Expendable,
 				external_precision,
 				external_force,
 			)?;
@@ -465,6 +466,7 @@ pub mod pallet {
 						asset_id.clone(),
 						&who,
 						amount.unique_saturated_into(),
+						Preservation::Expendable,
 						external_precision,
 						external_force,
 					)?;

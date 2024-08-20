@@ -57,7 +57,7 @@ pallet-xcm = { workspace = true, default-features = false}
 pallet-society ={ workspace = true, default-features = false}
 xcm-builder = { workspace = true, default-features = false }
 parachains-common = { workspace = true, default-features = false }
-cumulus-pallet-parachain-system = { workspace = true, default-features = false, features = ["parameterized-consensus-hook",] }
+cumulus-pallet-parachain-system = { workspace = true, default-features = false }
 
 [features]
 default = [ "std" ]

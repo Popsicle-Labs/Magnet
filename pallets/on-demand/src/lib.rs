@@ -339,7 +339,7 @@ where
 	}
 
 	fn check_slot_author(relaychian_number: u32, author: T::AccountId) -> bool {
-		let authorities = pallet_aura::Pallet::<T>::authorities();
+		let authorities = pallet_aura::Authorities::<T>::get();
 		let slot_width = Self::slot_width();
 		let auth_len = authorities.len() as u32;
 		// The larger the slot width, the longer the rotation time.
