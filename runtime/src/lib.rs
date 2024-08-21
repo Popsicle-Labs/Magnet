@@ -42,6 +42,8 @@ use weights::ExtrinsicBaseWeight;
 pub mod governance;
 use governance::pallet_custom_origins;
 pub mod contracts_config;
+pub mod xcms;
+
 /// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
 pub type Signature = MultiSignature;
 
@@ -178,7 +180,7 @@ mod block_times {
 	/// slot_duration()`.
 	///
 	/// Change this to adjust the block time.
-	pub const MILLISECS_PER_BLOCK: u64 = 6000;
+	pub const MILLISECS_PER_BLOCK: u64 = 12000;
 
 	// NOTE: Currently it is not possible to change the slot duration after the chain has started.
 	// Attempting to do so will brick block production.
@@ -214,7 +216,7 @@ const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 #[docify::export(max_block_weight)]
 /// We allow for 2 seconds of compute with a 6 second average block time.
 const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_parts(
-	WEIGHT_REF_TIME_PER_SECOND.saturating_mul(2),
+	WEIGHT_REF_TIME_PER_SECOND.saturating_div(2),
 	cumulus_primitives_core::relay_chain::MAX_POV_SIZE as u64,
 );
 
@@ -222,7 +224,7 @@ const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_parts(
 mod async_backing_params {
 	/// Maximum number of blocks simultaneously accepted by the Runtime, not yet included
 	/// into the relay chain.
-	pub(crate) const UNINCLUDED_SEGMENT_CAPACITY: u32 = 3;
+	pub(crate) const UNINCLUDED_SEGMENT_CAPACITY: u32 = 1;
 	/// How many parachain blocks are processed by the relay chain per parent. Limits the
 	/// number of blocks authored per slot.
 	pub(crate) const BLOCK_PROCESSING_VELOCITY: u32 = 1;
@@ -362,6 +364,10 @@ mod runtime {
 	pub type RandomnessCollectiveFlip = pallet_insecure_randomness_collective_flip;
 	#[runtime::pallet_index(71)]
 	pub type Contracts = pallet_contracts;
+
+	//Move-vm
+	#[runtime::pallet_index(80)]
+	pub type MoveModule = pallet_move;
 
 	//call util
 	#[runtime::pallet_index(90)]

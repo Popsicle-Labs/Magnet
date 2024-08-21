@@ -104,6 +104,14 @@ cumulus-relay-chain-interface.workspace = true
 cumulus-relay-chain-interface.default-features = true
 color-print = { workspace = true }
 
+# Local
+pallet-pot-rpc = { path = "../pallets/pot/rpc" }
+mp-system = { path = "../primitives/system"}
+mc-coretime-bulk = {path ="../client/coretime/bulk"}
+mp-coretime-bulk = { path = "../primitives/coretime/bulk"}
+mc-coretime-on-demand = {path ="../client/coretime/on-demand"}
+mp-coretime-on-demand = { path = "../primitives/coretime/on-demand"}
+
 #substrate
 sp-offchain = { workspace = true }
 sp-session = { workspace = true }
@@ -130,6 +138,8 @@ fc-rpc-core = { workspace = true }
 fc-storage = { workspace = true }
 fc-consensus = {  workspace = true }
 
+#move pallet rpc
+pallet-move-rpc = { workspace = true }
 
 [build-dependencies]
 substrate-build-script-utils.workspace = true

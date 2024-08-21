@@ -108,6 +108,8 @@ pallet-assurance = { path = "../pallets/assurance", default-features = false }
 pallet-liquidation = {path = "../pallets/liquidation", default-features = false}
 pallet-bulk = { path = "../pallets/bulk", default-features = false }
 
+#move pallet
+pallet-move = { workspace = true, default-features = false }
 
 #Frontier FRAME
 pallet-evm-chain-id = { workspace = true, default-features = false }
@@ -221,6 +223,7 @@ std = [
 	"pallet-contracts/std",
 	"pallet-multisig/std",
 	"pallet-proxy/std",
+	"pallet-move/std",
 ]
 
 runtime-benchmarks = [

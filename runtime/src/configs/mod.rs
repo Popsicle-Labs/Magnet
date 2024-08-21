@@ -253,6 +253,7 @@ impl pallet_timestamp::Config for Runtime {
 	type Moment = u64;
 	type OnTimestampSet = Aura;
 	type MinimumPeriod = ConstU64<0>;
+	// type MinimumPeriod = ConstU64<{ SLOT_DURATION / 2 }>;
 	type WeightInfo = ();
 }
 
@@ -393,7 +394,7 @@ impl pallet_aura::Config for Runtime {
 	type AuthorityId = AuraId;
 	type DisabledValidators = ();
 	type MaxAuthorities = ConstU32<100_000>;
-	type AllowMultipleBlocksPerSlot = ConstBool<true>;
+	type AllowMultipleBlocksPerSlot = ConstBool<false>;
 	type SlotDuration = ConstU64<SLOT_DURATION>;
 }
 
@@ -851,4 +852,18 @@ impl pallet_proxy::Config for Runtime {
 	type AnnouncementDepositBase = ConstU128<16_000_000_000_000>;
 	type AnnouncementDepositFactor = ConstU128<64_000_000_000_000>;
 	type WeightInfo = pallet_proxy::weights::SubstrateWeight<Runtime>;
+}
+
+parameter_types! {
+	pub const MultisigReqExpireTime: BlockNumber = 50400;
+	pub const MaxScriptSigners: u32 = 8;
+}
+
+impl pallet_move::Config for Runtime {
+	type Currency = Balances;
+	type CurrencyBalance = Balance;
+	type MultisigReqExpireTime = MultisigReqExpireTime;
+	type MaxScriptSigners = MaxScriptSigners;
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = pallet_move::weights::SubstrateWeight<Runtime>;
 }

@@ -50,6 +50,15 @@ use sc_service::{Configuration, PartialComponents, TFullBackend, TFullClient, Ta
 use sc_telemetry::{Telemetry, TelemetryHandle, TelemetryWorker, TelemetryWorkerHandle};
 use sc_transaction_pool_api::OffchainTransactionPoolFactory;
 use sp_keystore::KeystorePtr;
+
+use cumulus_client_cli::RelayChainMode;
+use futures::lock::Mutex;
+use mc_coretime_bulk::spawn_bulk_task;
+use mc_coretime_on_demand::spawn_on_demand_order;
+use mp_coretime_bulk::BulkMemRecord;
+use mp_coretime_bulk::BulkStatus;
+use mp_coretime_on_demand::OrderRecord;
+
 #[docify::export(wasm_executor)]
 type ParachainExecutor = WasmExecutor<ParachainHostFunctions>;
 
@@ -221,6 +230,24 @@ async fn start_node_impl(
 	let client = params.client.clone();
 	let backend = params.backend.clone();
 	let mut task_manager = params.task_manager;
+
+	let parachain_decimal = parachain_config
+		.chain_spec
+		.properties()
+		.get("tokenDecimals")
+		.and_then(|v| v.as_u64())
+		.expect("can't get token decimal");
+	let relay_rpc =
+		if let RelayChainMode::ExternalRpc(urls) = collator_options.clone().relay_chain_mode {
+			urls[0].as_str().to_string()
+		} else {
+			let rpc_addr = polkadot_config.rpc_addr;
+			let mut url = String::from("ws://");
+			url.push_str(
+				&rpc_addr.expect("Should set rpc address for submit order extrinic").to_string(),
+			);
+			url
+		};
 
 	let (relay_chain_interface, collator_key) = build_relay_chain_interface(
 		polkadot_config,
@@ -446,6 +473,27 @@ async fn start_node_impl(
 	})?;
 
 	if validator {
+		let order_record = Arc::new(Mutex::new(OrderRecord::new()));
+		spawn_on_demand_order(
+			client.clone(),
+			para_id,
+			relay_chain_interface.clone(),
+			transaction_pool.clone(),
+			&task_manager,
+			params.keystore_container.keystore(),
+			order_record.clone(),
+			relay_rpc,
+			parachain_decimal,
+		)?;
+		let bulk_mem_record =
+			Arc::new(Mutex::new(BulkMemRecord { coretime_para_height: 0, items: Vec::new() }));
+		spawn_bulk_task(
+			client.clone(),
+			para_id,
+			relay_chain_interface.clone(),
+			&task_manager,
+			bulk_mem_record.clone(),
+		)?;
 		start_consensus(
 			client.clone(),
 			backend,
@@ -461,6 +509,8 @@ async fn start_node_impl(
 			collator_key.expect("Command line arguments do not allow this. qed"),
 			overseer_handle,
 			announce_block,
+			order_record,
+			bulk_mem_record,
 		)?;
 	}
 
@@ -512,6 +562,8 @@ fn start_consensus(
 	collator_key: CollatorPair,
 	overseer_handle: OverseerHandle,
 	announce_block: Arc<dyn Fn(Hash, Option<Vec<u8>>) + Send + Sync>,
+	order_record: Arc<Mutex<OrderRecord>>,
+	bulk_mem_record: Arc<Mutex<BulkMemRecord>>,
 ) -> Result<(), sc_service::Error> {
 	let proposer_factory = sc_basic_authorship::ProposerFactory::with_proof_recording(
 		task_manager.spawn_handle(),
@@ -531,7 +583,76 @@ fn start_consensus(
 	);
 
 	let params = AuraParams {
-		create_inherent_data_providers: move |_, ()| async move { Ok(()) },
+		create_inherent_data_providers: move |_, ()| {
+			let bulk_mem_record_clone = bulk_mem_record.clone();
+			let order_record_clone = order_record.clone();
+			async move {
+				let mut bulk_mem_record_clone_local = bulk_mem_record_clone.lock().await;
+				let record_items = &mut bulk_mem_record_clone_local.items;
+				let item = record_items.iter().find(|item| item.status == BulkStatus::CoreAssigned);
+				let (
+					storage_proof,
+					storage_root,
+					region_id,
+					duration,
+					start_relaychain_height,
+					end_relaychain_height,
+				) = if let Some(item) = item {
+					(
+						Some(&item.storage_proof),
+						item.storage_root,
+						item.region_id,
+						item.duration,
+						item.start_relaychain_height,
+						item.end_relaychain_height,
+					)
+				} else {
+					(None, Default::default(), 0u128.into(), 0, 0, 0)
+				};
+				let bulk_inherent = mp_coretime_bulk::BulkInherentData::create_at(
+					storage_proof,
+					storage_root,
+					region_id,
+					duration,
+					start_relaychain_height,
+					end_relaychain_height,
+				)
+				.await;
+				if storage_proof.is_some() {
+					if let Some(pos) =
+						record_items.iter().position(|item| item.status == BulkStatus::CoreAssigned)
+					{
+						record_items.remove(pos);
+					}
+				}
+				let bulk_inherent = bulk_inherent.ok_or_else(|| {
+					Box::<dyn std::error::Error + Send + Sync>::from(
+						"Failed to create bulk inherent",
+					)
+				})?;
+
+				let (author_pub, relay_chian_number, price) = {
+					let order_record_local = order_record_clone.lock().await;
+					(
+						order_record_local.author_pub.clone(),
+						order_record_local.relay_height,
+						order_record_local.price,
+					)
+				};
+				let order_inherent = mp_coretime_on_demand::OrderInherentData::create_at(
+					relay_chian_number,
+					&author_pub,
+					price,
+				)
+				.await;
+				let order_inherent = order_inherent.ok_or_else(|| {
+					Box::<dyn std::error::Error + Send + Sync>::from(
+						"Failed to create order inherent",
+					)
+				})?;
+				Ok((bulk_inherent, order_inherent))
+			}
+		},
 		block_import,
 		para_client: client.clone(),
 		para_backend: backend,

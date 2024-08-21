@@ -17,18 +17,6 @@ overflow-checks = true
 members = [
     "node",
     "runtime",
-    #"pallets/on-demand",
-	#"pallets/bulk",
-#	"primitives/system",
-   # "pallets/evm-utils",
-#	"pallets/evm/precompile/substrate-utils",
-#	"pallets/evm/precompile/transfer-to-magnet",
-#	"pallets/pot/runtime-api",
-#	"pallets/pot/rpc",
-#	"pallets/pot",
-#	"pallets/assurance",
-  #  "pallets/liquidation",
-#	"pallets/assets-bridge",
 ]
 resolver = "2"
 
@@ -54,8 +42,6 @@ hex-literal = "0.4.1"
 impl-trait-for-tuples = "0.2.1"
 jsonrpsee = { version = "0.23.2" }
 log = { version = "0.4.20", default-features = false }
-parity-scale-codec = { version = "3.6.4", default-features = false }
-scale-codec = { package = "parity-scale-codec", version = "3.6.4", default-features = false, features = ["derive"] }
 scale-info = { version = "2.10.0", default-features = false, features = ["derive", "serde"] }
 schnellru = "0.2.1"
 serde = { version = "1.0.188", default-features = false, features = ["derive", "alloc"] }
@@ -241,5 +227,5 @@ pallet-hotfix-sufficients = { version = "1.0.0", git = "https://github.com/polka
 precompile-utils = { git = "https://github.com/polkadot-evm/frontier", branch = "stable2407", default-features = false }
 
 #Move pallet
-#pallet-move = { git = "https://github.com/Magport/pallet-move", branch = "main", default-features = false }
-#pallet-move-rpc = {package = "pallet-move-rpc", git = "https://github.com/Magport/pallet-move", branch = "main", default-features = false }
+pallet-move = { git = "https://github.com/Magport/pallet-move", branch = "stable2407", default-features = false }
+pallet-move-rpc = {package = "pallet-move-rpc", git = "https://github.com/Magport/pallet-move", branch = "stable2407", default-features = false }

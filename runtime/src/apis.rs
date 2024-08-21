@@ -46,18 +46,19 @@ use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H160, H256, U256};
 use sp_runtime::{
 	traits::{Block as BlockT, DispatchInfoOf, Dispatchable, Get, UniqueSaturatedInto},
 	transaction_validity::{TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, Permill,
+	ApplyExtrinsicResult, DispatchError, Permill,
 };
 use sp_version::RuntimeVersion;
 
 // Local module imports
 use super::{
 	configs::RuntimeBlockWeights, AccountId, Assurance, Balance, Block, BlockNumber, BulkPallet,
-	ConsensusHook, Contracts, Ethereum, Executive, Hash, InherentDataExt, Nonce, OrderPallet,
-	ParachainSystem, Pot, Runtime, RuntimeCall, RuntimeGenesisConfig, RuntimeOrigin, SessionKeys,
-	System, TransactionPayment, SLOT_DURATION, VERSION,
+	ConsensusHook, Contracts, Ethereum, Executive, Hash, InherentDataExt, MoveModule, Nonce,
+	OrderPallet, ParachainSystem, Pot, Runtime, RuntimeCall, RuntimeGenesisConfig, RuntimeOrigin,
+	SessionKeys, System, TransactionPayment, SLOT_DURATION, VERSION,
 };
 use crate::{generic, SignedExtra, UncheckedExtrinsic};
+use pallet_move::api::{ModuleAbi, MoveApiEstimation};
 use scale_info::prelude::string::String;
 use sp_std::{cmp::Ordering, marker::PhantomData, prelude::*};
 
@@ -484,72 +485,100 @@ impl_runtime_apis! {
 			Pot::balance_of_base().map_err(|_| sp_runtime::DispatchError::Other("BaseBalanceError"))
 		}
 	}
-	impl pallet_contracts::ContractsApi<Block, AccountId, Balance, BlockNumber, Hash, EventRecord>
-	for Runtime
-{
-	fn call(
-		origin: AccountId,
-		dest: AccountId,
-		value: Balance,
-		gas_limit: Option<Weight>,
-		storage_deposit_limit: Option<Balance>,
-		input_data: Vec<u8>,
-	) -> pallet_contracts::ContractExecResult<Balance, EventRecord> {
-		let gas_limit = gas_limit.unwrap_or(RuntimeBlockWeights::get().max_block);
-		Contracts::bare_call(
-			origin,
-			dest,
-			value,
-			gas_limit,
-			storage_deposit_limit,
-			input_data,
-			CONTRACTS_DEBUG_OUTPUT,
-			CONTRACTS_EVENTS,
-			pallet_contracts::Determinism::Enforced,
-		)
+	impl pallet_contracts::ContractsApi<Block, AccountId, Balance, BlockNumber, Hash, EventRecord> for Runtime {
+		fn call(
+			origin: AccountId,
+			dest: AccountId,
+			value: Balance,
+			gas_limit: Option<Weight>,
+			storage_deposit_limit: Option<Balance>,
+			input_data: Vec<u8>,
+		) -> pallet_contracts::ContractExecResult<Balance, EventRecord> {
+			let gas_limit = gas_limit.unwrap_or(RuntimeBlockWeights::get().max_block);
+			Contracts::bare_call(
+				origin,
+				dest,
+				value,
+				gas_limit,
+				storage_deposit_limit,
+				input_data,
+				CONTRACTS_DEBUG_OUTPUT,
+				CONTRACTS_EVENTS,
+				pallet_contracts::Determinism::Enforced,
+			)
+		}
+
+		fn instantiate(
+			origin: AccountId,
+			value: Balance,
+			gas_limit: Option<Weight>,
+			storage_deposit_limit: Option<Balance>,
+			code: pallet_contracts::Code<Hash>,
+			data: Vec<u8>,
+			salt: Vec<u8>,
+		) -> pallet_contracts::ContractInstantiateResult<AccountId, Balance, EventRecord>
+		{
+			let gas_limit = gas_limit.unwrap_or(RuntimeBlockWeights::get().max_block);
+			Contracts::bare_instantiate(
+				origin,
+				value,
+				gas_limit,
+				storage_deposit_limit,
+				code,
+				data,
+				salt,
+				CONTRACTS_DEBUG_OUTPUT,
+				CONTRACTS_EVENTS,
+			)
+		}
+
+		fn upload_code(
+			origin: AccountId,
+			code: Vec<u8>,
+			storage_deposit_limit: Option<Balance>,
+			determinism: pallet_contracts::Determinism,
+		) -> pallet_contracts::CodeUploadResult<Hash, Balance>
+		{
+			Contracts::bare_upload_code(origin, code, storage_deposit_limit, determinism)
+		}
+
+		fn get_storage(
+			address: AccountId,
+			key: Vec<u8>,
+		) -> pallet_contracts::GetStorageResult {
+			Contracts::get_storage(address, key)
+		}
 	}
 
-	fn instantiate(
-		origin: AccountId,
-		value: Balance,
-		gas_limit: Option<Weight>,
-		storage_deposit_limit: Option<Balance>,
-		code: pallet_contracts::Code<Hash>,
-		data: Vec<u8>,
-		salt: Vec<u8>,
-	) -> pallet_contracts::ContractInstantiateResult<AccountId, Balance, EventRecord>
-	{
-		let gas_limit = gas_limit.unwrap_or(RuntimeBlockWeights::get().max_block);
-		Contracts::bare_instantiate(
-			origin,
-			value,
-			gas_limit,
-			storage_deposit_limit,
-			code,
-			data,
-			salt,
-			CONTRACTS_DEBUG_OUTPUT,
-			CONTRACTS_EVENTS,
-		)
-	}
 
-	fn upload_code(
-		origin: AccountId,
-		code: Vec<u8>,
-		storage_deposit_limit: Option<Balance>,
-		determinism: pallet_contracts::Determinism,
-	) -> pallet_contracts::CodeUploadResult<Hash, Balance>
-	{
-		Contracts::bare_upload_code(origin, code, storage_deposit_limit, determinism)
-	}
+	impl pallet_move::api::MoveApi<Block, AccountId> for Runtime {
+		fn estimate_gas_publish_module(account: AccountId, bytecode: Vec<u8>) -> Result<MoveApiEstimation, DispatchError> {
+			MoveModule::rpc_estimate_gas_publish_module(&account, bytecode)
+		}
 
-	fn get_storage(
-		address: AccountId,
-		key: Vec<u8>,
-	) -> pallet_contracts::GetStorageResult {
-		Contracts::get_storage(address, key)
+		fn estimate_gas_publish_bundle(account: AccountId, bytecode: Vec<u8>) -> Result<MoveApiEstimation, DispatchError> {
+			MoveModule::rpc_estimate_gas_publish_bundle(&account, bytecode)
+		}
+
+		fn estimate_gas_execute_script(transaction_bc: Vec<u8>) -> Result<MoveApiEstimation, DispatchError> {
+			MoveModule::rpc_estimate_gas_execute_script(transaction_bc)
+		}
+
+		fn get_module(account: AccountId, name: String) -> Result<Option<Vec<u8>>, Vec<u8>> {
+			MoveModule::rpc_get_module(account, name)
+		}
+
+		fn get_module_abi(account: AccountId, name: String) -> Result<Option<ModuleAbi>, Vec<u8>> {
+			MoveModule::rpc_get_module_abi(account, name)
+		}
+
+		fn get_resource(
+			account: AccountId,
+			tag: Vec<u8>,
+		) -> Result<Option<Vec<u8>>, Vec<u8>> {
+			MoveModule::rpc_get_resource(account, tag)
+		}
 	}
-}
 	#[cfg(feature = "try-runtime")]
 	impl frame_try_runtime::TryRuntime<Block> for Runtime {
 		fn on_runtime_upgrade(checks: frame_try_runtime::UpgradeCheckSelect) -> (Weight, Weight) {

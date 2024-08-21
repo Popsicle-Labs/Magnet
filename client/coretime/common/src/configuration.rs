@@ -15,7 +15,7 @@
 // along with Magnet.  If not, see <http://www.gnu.org/licenses/>.
 
 use codec::{Decode, Encode};
-use polkadot_primitives::vstaging::NodeFeatures;
+use polkadot_primitives::v7::NodeFeatures;
 use polkadot_primitives::{AsyncBackingParams, Balance, ExecutorParams, SessionIndex};
 use sp_runtime::Perbill;
 

@@ -393,7 +393,6 @@ impl ExtBuilder {
 			profit_distribution_cycle: self.profit_distribution_cycle,
 		};
 		liquidation_config.assimilate_storage(&mut storage).unwrap();
-
 		let mut ext = sp_io::TestExternalities::new(storage);
 		ext.execute_with(|| System::set_block_number(1));
 		ext

@@ -25,7 +25,7 @@ use parachain_magnet_runtime::{AccountId, Balance, Hash, Nonce};
 
 mod eth;
 pub use self::eth::{create_eth, EthDeps};
-
+use pallet_pot_rpc::PotApiServer;
 /// Full client dependencies.
 pub struct FullDeps<B: BlockT, C, P, A: ChainApi, CT, CIDP> {
 	/// The client instance to use.
@@ -72,6 +72,8 @@ where
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<B, Balance>,
 	C::Api: fp_rpc::ConvertTransactionRuntimeApi<B>,
 	C::Api: fp_rpc::EthereumRuntimeRPCApi<B>,
+	C::Api: pallet_pot_rpc::PotRPCApi<B>,
+	C::Api: pallet_move_rpc::MoveRuntimeApi<B, AccountId>,
 	C: HeaderBackend<B> + HeaderMetadata<B, Error = BlockChainError> + 'static,
 	C: BlockchainEvents<B> + AuxStore + UsageProvider<B> + StorageProvider<B, BE>,
 	BE: Backend<B> + 'static,
@@ -80,6 +82,7 @@ where
 	CIDP: CreateInherentDataProviders<B, ()> + Send + 'static,
 	CT: fp_rpc::ConvertTransaction<<B as BlockT>::Extrinsic> + Send + Sync + 'static,
 {
+	use pallet_move_rpc::{MoveApiServer, MovePallet};
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
 	use sc_consensus_manual_seal::rpc::{ManualSeal, ManualSealApiServer};
 	use substrate_frame_rpc_system::{System, SystemApiServer};
@@ -88,7 +91,9 @@ where
 	let FullDeps { client, pool, deny_unsafe, command_sink, eth } = deps;
 
 	io.merge(System::new(client.clone(), pool, deny_unsafe).into_rpc())?;
-	io.merge(TransactionPayment::new(client).into_rpc())?;
+	io.merge(TransactionPayment::new(client.clone()).into_rpc())?;
+	io.merge(pallet_pot_rpc::Pot::new(client.clone()).into_rpc())?;
+	io.merge(MovePallet::new(client.clone()).into_rpc())?;
 
 	if let Some(command_sink) = command_sink {
 		io.merge(
