@@ -28,10 +28,7 @@ use crate::{
 use frame_support::parameter_types;
 use frame_support::traits::{EitherOf, MapSuccess, TryMapSuccess};
 use sp_core::ConstU32;
-use sp_runtime::{
-	traits::{CheckedReduceBy, ConstU16, Replace, ReplaceWithDefault},
-	DispatchError,
-};
+use sp_runtime::traits::{CheckedReduceBy, ConstU16, Replace, ReplaceWithDefault};
 
 parameter_types! {
 	pub const AlarmInterval: BlockNumber = 1;

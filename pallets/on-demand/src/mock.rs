@@ -28,7 +28,7 @@ use sp_core::{crypto::AccountId32, ConstBool, ConstU32, ConstU64, H256};
 use sp_keyring::Sr25519Keyring::Alice;
 use sp_runtime::{
 	traits::{BlakeTwo256, IdentifyAccount, IdentityLookup, Verify},
-	BuildStorage, MultiSignature, Perbill,
+	BuildStorage, MultiSignature,
 };
 
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -130,9 +130,6 @@ impl pallet_timestamp::Config for Test {
 	/// A timestamp: milliseconds since the unix epoch.
 	type Moment = u64;
 	type OnTimestampSet = Aura;
-	#[cfg(feature = "experimental")]
-	type MinimumPeriod = ConstU64<0>;
-	#[cfg(not(feature = "experimental"))]
 	type MinimumPeriod = ConstU64<{ SLOT_DURATION / 2 }>;
 	type WeightInfo = ();
 }

@@ -52,7 +52,7 @@ use sp_runtime::{
 	codec::Encode,
 	traits::{AtLeast32BitUnsigned, Block as BlockT, Header as HeaderT, MaybeDisplay},
 };
-use std::{cmp::Ordering, net::SocketAddr};
+use std::cmp::Ordering;
 use std::{error::Error, fmt::Debug, sync::Arc};
 use submit_order::{build_rpc_for_submit_order, SubmitOrderError};
 use subxt::backend::{legacy::LegacyRpcMethods, rpc::RpcClient};

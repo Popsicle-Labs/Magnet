@@ -1,28 +1,3 @@
-// This is free and unencumbered software released into the public domain.
-//
-// Anyone is free to copy, modify, publish, use, compile, sell, or
-// distribute this software, either in source code form or as a compiled
-// binary, for any purpose, commercial or non-commercial, and by any
-// means.
-//
-// In jurisdictions that recognize copyright laws, the author or authors
-// of this software dedicate any and all copyright interest in the
-// software to the public domain. We make this dedication for the benefit
-// of the public at large and to the detriment of our heirs and
-// successors. We intend this dedication to be an overt act of
-// relinquishment in perpetuity of all present and future rights to this
-// software under copyright law.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-// IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-// OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-// ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-// OTHER DEALINGS IN THE SOFTWARE.
-//
-// For more information, please refer to <http://unlicense.org>
-
 // External crates imports
 use alloc::vec::Vec;
 use fp_rpc::TransactionStatus;
@@ -33,18 +8,14 @@ use frame_support::{
 };
 use pallet_aura::Authorities;
 use pallet_ethereum::{
-	Call::transact, PostLogContent, Transaction as EthereumTransaction, TransactionAction,
-	TransactionData,
+	Call::transact, Transaction as EthereumTransaction, TransactionAction, TransactionData,
 };
-use pallet_evm::{
-	Account as EVMAccount, AddressMapping, EnsureAddressTruncated, FeeCalculator,
-	HashedAddressMapping, Runner,
-};
+use pallet_evm::{Account as EVMAccount, AddressMapping, FeeCalculator, Runner};
 use sp_api::impl_runtime_apis;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H160, H256, U256};
 use sp_runtime::{
-	traits::{Block as BlockT, DispatchInfoOf, Dispatchable, Get, UniqueSaturatedInto},
+	traits::{Block as BlockT, Get, UniqueSaturatedInto},
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, DispatchError, Permill,
 };
@@ -54,13 +25,13 @@ use sp_version::RuntimeVersion;
 use super::{
 	configs::RuntimeBlockWeights, AccountId, Assurance, Balance, Block, BlockNumber, BulkPallet,
 	ConsensusHook, Contracts, Ethereum, Executive, Hash, InherentDataExt, MoveModule, Nonce,
-	OrderPallet, ParachainSystem, Pot, Runtime, RuntimeCall, RuntimeGenesisConfig, RuntimeOrigin,
-	SessionKeys, System, TransactionPayment, SLOT_DURATION, VERSION,
+	OrderPallet, ParachainSystem, Pot, Runtime, RuntimeCall, RuntimeGenesisConfig, SessionKeys,
+	System, TransactionPayment, SLOT_DURATION, VERSION,
 };
-use crate::{generic, SignedExtra, UncheckedExtrinsic};
+use crate::UncheckedExtrinsic;
 use pallet_move::api::{ModuleAbi, MoveApiEstimation};
 use scale_info::prelude::string::String;
-use sp_std::{cmp::Ordering, marker::PhantomData, prelude::*};
+use sp_std::prelude::*;
 
 type EventRecord = frame_system::EventRecord<
 	<Runtime as frame_system::Config>::RuntimeEvent,

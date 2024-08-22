@@ -23,10 +23,7 @@ use frame_support::{
 	traits::{ConstU16, Currency, EitherOf, OnUnbalanced},
 };
 use frame_system::{EnsureRoot, EnsureRootWithSuccess};
-use sp_core::{
-	crypto::{AccountId32, ByteArray, KeyTypeId},
-	ConstU32, OpaqueMetadata, H160, H256, U256,
-};
+use sp_core::{crypto::AccountId32, ConstU32};
 pub mod origins;
 pub use origins::{
 	pallet_custom_origins, AuctionAdmin, Fellows, FellowshipAdmin, FellowshipExperts,
@@ -38,8 +35,8 @@ pub use tracks::TracksInfo;
 pub mod fellowship;
 // pub use fellowship::{FellowshipCollectiveInstance, FellowshipReferendaInstance};
 use crate::{
-	weights, AccountId, Balance, Balances, Block, BlockNumber, Preimage, Referenda, Runtime,
-	RuntimeCall, RuntimeEvent, Scheduler, CENTS, DAYS,
+	weights, AccountId, Balance, Balances, BlockNumber, Preimage, Referenda, Runtime, RuntimeCall,
+	RuntimeEvent, Scheduler, CENTS, DAYS,
 };
 pub use pallet_balances::{Call as BalancesCall, NegativeImbalance};
 pub use parachains_common::impls::{AccountIdOf, DealWithFees};

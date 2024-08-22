@@ -1,28 +1,3 @@
-// This is free and unencumbered software released into the public domain.
-//
-// Anyone is free to copy, modify, publish, use, compile, sell, or
-// distribute this software, either in source code form or as a compiled
-// binary, for any purpose, commercial or non-commercial, and by any
-// means.
-//
-// In jurisdictions that recognize copyright laws, the author or authors
-// of this software dedicate any and all copyright interest in the
-// software to the public domain. We make this dedication for the benefit
-// of the public at large and to the detriment of our heirs and
-// successors. We intend this dedication to be an overt act of
-// relinquishment in perpetuity of all present and future rights to this
-// software under copyright law.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-// IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-// OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-// ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-// OTHER DEALINGS IN THE SOFTWARE.
-//
-// For more information, please refer to <http://unlicense.org>
-
 mod xcm_config;
 
 // Substrate and Polkadot dependencies
@@ -31,15 +6,14 @@ use codec::{Decode, Encode, MaxEncodedLen};
 use cumulus_pallet_parachain_system::RelayNumberMonotonicallyIncreases;
 use cumulus_primitives_core::{AggregateMessageOrigin, ParaId};
 use fp_evm::weight_per_gas;
-use fp_rpc::TransactionStatus;
 use frame_support::{
 	derive_impl,
 	dispatch::DispatchClass,
 	parameter_types,
 	traits::{
 		fungible::HoldConsideration, AsEnsureOriginWithArg, ConstBool, ConstU32, ConstU64, ConstU8,
-		EitherOf, EitherOfDiverse, FindAuthor, InstanceFilter, LinearStoragePrice, OnFinalize,
-		PrivilegeCmp, TransformOrigin, VariantCountOf,
+		EitherOf, EitherOfDiverse, FindAuthor, InstanceFilter, LinearStoragePrice, PrivilegeCmp,
+		TransformOrigin, VariantCountOf,
 	},
 	weights::{ConstantMultiplier, Weight},
 	PalletId,
@@ -49,33 +23,24 @@ use frame_system::{
 	pallet_prelude::BlockNumberFor,
 	EnsureRoot, EnsureSigned,
 };
-use pallet_ethereum::{
-	Call::transact, PostLogContent, Transaction as EthereumTransaction, TransactionAction,
-	TransactionData,
-};
-use pallet_evm::{
-	Account as EVMAccount, EnsureAddressTruncated, FeeCalculator, HashedAddressMapping, Runner,
-};
+use pallet_ethereum::PostLogContent;
+use pallet_evm::{EnsureAddressTruncated, HashedAddressMapping};
 use pallet_xcm::{EnsureXcm, IsVoiceOfBody};
 use parachains_common::message_queue::{NarrowOriginToSibling, ParaIdToSibling};
 use polkadot_runtime_common::{
 	xcm_sender::NoPriceForMessageDelivery, BlockHashCount, SlowAdjustingFeeUpdate,
 };
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
-use sp_core::{
-	crypto::{ByteArray, KeyTypeId},
-	ConstU128, OpaqueMetadata, H160, H256, U256,
-};
+use sp_core::{crypto::ByteArray, ConstU128, H160, U256};
 use sp_runtime::{
 	traits::{BlakeTwo256, Block as BlockT, DispatchInfoOf, Dispatchable, PostDispatchInfoOf},
-	transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
+	transaction_validity::{TransactionValidity, TransactionValidityError},
 	ConsensusEngineId, Perbill, Permill, RuntimeDebug, SaturatedConversion,
 };
 use sp_version::RuntimeVersion;
 use xcm::latest::prelude::BodyId;
 // Local module imports
 use super::{
-	opaque,
 	weights::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight},
 	AccountId, Aura, Balance, Balances, Block, BlockNumber, CollatorSelection, ConsensusHook, Hash,
 	MessageQueue, Nonce, OriginCaller, PalletInfo, ParachainSystem, Preimage, Runtime, RuntimeCall,
@@ -88,12 +53,11 @@ use crate::{
 	generic, governance::origins::AuctionAdmin, weights, BaseFee, EVMChainId, SignedExtra, DAYS,
 	MILLIUNIT, UNIT,
 };
-use pallet_aura::Authorities;
 pub use pallet_bulk;
 use pallet_liquidation::{BulkGasCost, OrderGasCost};
 use pallet_pot::PotNameBtreemap;
 use scale_info::prelude::string::String;
-use sp_std::collections::{btree_map::BTreeMap, btree_set::BTreeSet};
+use sp_std::collections::btree_map::BTreeMap;
 use sp_std::{cmp::Ordering, marker::PhantomData, prelude::*};
 use xcm_config::{RelayLocation, XcmOriginToTransactDispatchOrigin};
 

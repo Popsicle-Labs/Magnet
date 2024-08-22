@@ -10,7 +10,7 @@ version = "0.1.0"
 
 [dependencies]
 async-trait = { workspace = true }
-codec = { package = "parity-scale-codec", workspace = true, features = [ "derive" ] }
+codec = {workspace = true}
 futures = { workspace = true }
 tracing = { workspace = true }
 schnellru = { workspace = true }

@@ -21,7 +21,6 @@ use sp_runtime::{
 
 use crate::OrderGasCost;
 use frame_system::pallet_prelude::BlockNumberFor;
-use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_std::{cell::RefCell, collections::btree_map::BTreeMap};
 use xcm::latest::{Assets, Location, SendError, SendResult, SendXcm, Xcm, XcmHash};
 use xcm::prelude::*;

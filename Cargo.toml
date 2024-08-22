@@ -28,12 +28,12 @@ license = "Apache License 2.0"
 repository = "https://github.com/Magport/Magnet"
 
 [workspace.dependencies]
-array-bytes = "6.1"
-assert_matches = "1.3.0"
+array-bytes = { version = "6.2.2", default-features = false }
+assert_matches = { version = "1.5.0" }
 async-trait = "0.1.73"
-bounded-collections = { version = "0.1.8", default-features = false }
+bounded-collections = { version = "0.2.0", default-features = false }
 clap ="4.5"
-codec = { package = "parity-scale-codec", version = "3.6.4", default-features = false }
+codec = { version = "3.6.12", default-features = false, package = "parity-scale-codec" }
 color-print = "0.3.4"
 ethabi = "18.0.0"
 futures = "0.3.30"
@@ -44,8 +44,8 @@ jsonrpsee = { version = "0.23.2" }
 log = { version = "0.4.20", default-features = false }
 scale-info = { version = "2.10.0", default-features = false, features = ["derive", "serde"] }
 schnellru = "0.2.1"
-serde = { version = "1.0.188", default-features = false, features = ["derive", "alloc"] }
-serde_json = "1.0.105"
+serde = { version = "1.0.197", default-features = false }
+serde_json = { version = "1.0.114", default-features = false }
 smallvec = "1.11.0"
 subxt = {version = "0.37.0"}
 subxt-signer = {version = "0.37.0"}

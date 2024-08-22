@@ -32,13 +32,9 @@ use cumulus_relay_chain_interface::{OverseerHandle, RelayChainInterface};
 
 // Substrate Imports
 pub use crate::eth::{db_config_dir, EthConfiguration};
-use crate::{
-	client::{BaseRuntimeApiCollection, FullBackend, FullClient, RuntimeApiCollection},
-	eth::{
-		new_frontier_partial, spawn_frontier_tasks, BackendType, EthCompatRuntimeApiCollection,
-		FrontierBackend, FrontierBlockImport as TFrontierBlockImport, FrontierPartialComponents,
-		StorageOverride, StorageOverrideHandler,
-	},
+use crate::eth::{
+	new_frontier_partial, spawn_frontier_tasks, BackendType, FrontierBackend,
+	FrontierBlockImport as TFrontierBlockImport, FrontierPartialComponents, StorageOverrideHandler,
 };
 use frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE;
 use prometheus_endpoint::Registry;
