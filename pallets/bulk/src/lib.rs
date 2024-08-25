@@ -246,7 +246,17 @@ pub mod pallet {
 				duration,
 				start_relaychain_height,
 				end_relaychain_height,
+				record_index,
 			} = data;
+
+			let old_record_index = RecordIndex::<T>::get();
+			if record_index != old_record_index {
+				let total_weight = T::DbWeight::get().reads_writes(1, 0);
+				return Ok(PostDispatchInfo {
+					actual_weight: Some(total_weight),
+					pays_fee: Pays::No,
+				});
+			}
 
 			let storage_proof = p_storage_proof.ok_or(Error::<T>::ProofNone)?;
 			// Create coretime parachain root proof
@@ -292,7 +302,6 @@ pub mod pallet {
 
 			let real_start_relaychain_height = Self::relaychain_block_number();
 			let real_end_relaychain_height = real_start_relaychain_height + duration;
-			let old_record_index = RecordIndex::<T>::get();
 
 			// Create record of purchase coretime.
 			BulkRecords::<T>::insert(

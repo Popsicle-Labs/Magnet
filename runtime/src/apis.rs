@@ -440,6 +440,11 @@ impl_runtime_apis! {
 		fn relaychain_block_number()->u32 {
 			BulkPallet::relaychain_block_number()
 		}
+
+		fn record_index()-> u32 {
+			BulkPallet::record_index()
+		}
+
 	}
 
 	impl mp_system::OnRelayChainApi<Block> for Runtime {

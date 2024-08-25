@@ -28,6 +28,7 @@ impl BulkInherentData {
 		duration: u32,
 		start: u32,
 		end: u32,
+		record_index: u32,
 	) -> Option<BulkInherentData> {
 		let storage_proof =
 			if let Some(proof) = storage_proof { Some(proof.clone()) } else { None };
@@ -38,6 +39,7 @@ impl BulkInherentData {
 			duration,
 			start_relaychain_height: start,
 			end_relaychain_height: end,
+			record_index,
 		})
 	}
 }

@@ -46,6 +46,8 @@ pub struct BulkInherentData {
 	pub start_relaychain_height: u32,
 	/// Relaychain block number of end schedule coretime core.
 	pub end_relaychain_height: u32,
+	/// Expected record index for bulk pallet.
+	pub record_index: u32,
 }
 
 /// Status of bulk purchased then assigned.
@@ -75,6 +77,8 @@ pub struct BulkMemRecordItem {
 	pub duration: u32,
 	/// Status of bulk record.
 	pub status: BulkStatus,
+	/// Expected record index for bulk pallet.
+	pub record_index: u32,
 }
 
 #[derive(Clone, Debug)]
@@ -96,6 +100,8 @@ sp_api::decl_runtime_apis! {
 		fn rpc_url() -> Vec<u8>;
 		// Block number of relaychain.
 		fn relaychain_block_number()->u32;
+		// Record index.
+		fn record_index()-> u32;
 	}
 }
 

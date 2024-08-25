@@ -597,6 +597,7 @@ fn start_consensus(
 					duration,
 					start_relaychain_height,
 					end_relaychain_height,
+					record_index,
 				) = if let Some(item) = item {
 					(
 						Some(&item.storage_proof),
@@ -605,9 +606,10 @@ fn start_consensus(
 						item.duration,
 						item.start_relaychain_height,
 						item.end_relaychain_height,
+						item.record_index,
 					)
 				} else {
-					(None, Default::default(), 0u128.into(), 0, 0, 0)
+					(None, Default::default(), 0u128.into(), 0, 0, 0, 0)
 				};
 				let bulk_inherent = mp_coretime_bulk::BulkInherentData::create_at(
 					storage_proof,
@@ -616,6 +618,7 @@ fn start_consensus(
 					duration,
 					start_relaychain_height,
 					end_relaychain_height,
+					record_index,
 				)
 				.await;
 				if storage_proof.is_some() {

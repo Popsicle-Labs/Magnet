@@ -97,6 +97,14 @@ where
 
 		let mut bulk_record_local = bulk_record.lock().await;
 		bulk_record_local.coretime_para_height = block_number;
+		let record_index = parachain.runtime_api().record_index(hash)?;
+		// Remove useless item.
+		let record_items = &mut bulk_record_local.items;
+		if let Some(pos) = record_items.iter().position(|item| {
+			(item.status == BulkStatus::CoreAssigned) && (item.record_index + 1 == record_index)
+		}) {
+			record_items.remove(pos);
+		}
 		let events = block.events().await?;
 		for event in events.iter() {
 			let event = event?;
@@ -180,6 +188,7 @@ where
 								status: BulkStatus::Assigned,
 								start_relaychain_height: 0,
 								end_relaychain_height: 0,
+								record_index,
 							};
 							bulk_record_local.items.push(record_item);
 						}
@@ -247,9 +256,10 @@ pub async fn run_coretime_bulk_task<P, R, Block>(
 {
 	let bulk_task = async move {
 		loop {
-			let _ =
+			let result =
 				coretime_bulk_task(&*parachain, relay_chain.clone(), para_id, bulk_record.clone())
 					.await;
+			log::info!("==============run_coretime_bulk_task result:{:?}", result);
 		}
 	};
 	select! {
