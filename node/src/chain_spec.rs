@@ -49,12 +49,22 @@ pub fn get_collator_keys_from_seed(seed: &str) -> AuraId {
 	get_from_seed::<AuraId>(seed)
 }
 
+/// Generate AuraId from address
+pub fn get_collator_keys_from_address(address: &str) -> AuraId {
+	let account_id = AccountId32::from_ss58check(address).expect("Invalid address");
+	AuraId::from_slice(account_id.as_ref()).expect("Invalid AuraId")
+}
+
 /// Helper function to generate an account ID from seed
 pub fn get_account_id_from_seed<TPublic: Public>(seed: &str) -> AccountId
 where
 	AccountPublic: From<<TPublic::Pair as Pair>::Public>,
 {
 	AccountPublic::from(get_from_seed::<TPublic>(seed)).into_account()
+}
+
+fn get_account_id_from_address(address: &str) -> AccountId32 {
+	AccountId32::from_ss58check(address).expect("Invalid address")
 }
 
 /// Generate the session keys from individual elements.
@@ -86,29 +96,25 @@ pub fn development_config() -> ChainSpec {
 		// initial collators.
 		vec![
 			(
-				get_account_id_from_seed::<sr25519::Public>("Alice"),
-				get_collator_keys_from_seed("Alice"),
+				get_account_id_from_address("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"),
+				get_collator_keys_from_address("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"),
 			),
 			(
-				get_account_id_from_seed::<sr25519::Public>("Bob"),
-				get_collator_keys_from_seed("Bob"),
+				get_account_id_from_address("5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y"),
+				get_collator_keys_from_address("5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y"),
 			),
 		],
 		vec![
-			get_account_id_from_seed::<sr25519::Public>("Alice"),
-			get_account_id_from_seed::<sr25519::Public>("Bob"),
-			get_account_id_from_seed::<sr25519::Public>("Charlie"),
-			get_account_id_from_seed::<sr25519::Public>("Dave"),
-			get_account_id_from_seed::<sr25519::Public>("Eve"),
-			get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-			get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-			get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
-			get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
-			get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
-			get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
-			get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
+			get_account_id_from_address("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"),
+			get_account_id_from_address("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"),
+			get_account_id_from_address("5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y"),
+			get_account_id_from_address("5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy"),
+			get_account_id_from_address("5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kUMaw"),
+			get_account_id_from_address("5CiPPseXPECbkjWCa6MnjNokrgYjMqmKndv2rSnekmSK2DjL"),
+			get_account_id_from_address("5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY"),
+			get_account_id_from_address("5HpG9w8EBLe5XCrbczpwq5TSXvedjrBGCwqxK1iQ7qUsSWFc"),
 		],
-		get_account_id_from_seed::<sr25519::Public>("Alice"),
+		get_account_id_from_address("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"),
 		2000.into(),
 	))
 	.build()
@@ -137,38 +143,30 @@ pub fn local_testnet_config() -> ChainSpec {
 		// initial collators.
 		vec![
 			(
-				get_account_id_from_seed::<sr25519::Public>("Alice"),
-				get_collator_keys_from_seed("Alice"),
+				get_account_id_from_address("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"),
+				get_collator_keys_from_address("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"),
 			),
 			(
-				get_account_id_from_seed::<sr25519::Public>("Bob"),
-				get_collator_keys_from_seed("Bob"),
+				get_account_id_from_address("5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y"),
+				get_collator_keys_from_address("5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y"),
 			),
 		],
 		vec![
-			get_account_id_from_seed::<sr25519::Public>("Alice"),
-			get_account_id_from_seed::<sr25519::Public>("Bob"),
-			get_account_id_from_seed::<sr25519::Public>("Charlie"),
-			get_account_id_from_seed::<sr25519::Public>("Dave"),
-			get_account_id_from_seed::<sr25519::Public>("Eve"),
-			get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-			get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-			get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
-			get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
-			get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
-			get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
-			get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
+			get_account_id_from_address("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"),
+			get_account_id_from_address("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"),
+			get_account_id_from_address("5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y"),
+			get_account_id_from_address("5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy"),
+			get_account_id_from_address("5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kUMaw"),
+			get_account_id_from_address("5CiPPseXPECbkjWCa6MnjNokrgYjMqmKndv2rSnekmSK2DjL"),
+			get_account_id_from_address("5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY"),
+			get_account_id_from_address("5HpG9w8EBLe5XCrbczpwq5TSXvedjrBGCwqxK1iQ7qUsSWFc"),
 		],
-		get_account_id_from_seed::<sr25519::Public>("Alice"),
+		get_account_id_from_address("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"),
 		2000.into(),
 	))
 	.with_protocol_id("magnet-local")
 	.with_properties(properties)
 	.build()
-}
-
-fn get_account_id_from_address(address: &str) -> AccountId32 {
-	AccountId32::from_ss58check(address).expect("Invalid address")
 }
 
 fn testnet_genesis(
@@ -177,8 +175,8 @@ fn testnet_genesis(
 	root: AccountId,
 	id: ParaId,
 ) -> serde_json::Value {
-	let alice = get_from_seed::<sr25519::Public>("Alice");
-	let bob = get_from_seed::<sr25519::Public>("Bob");
+	let alice = get_account_id_from_address("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY");
+	let bob = get_account_id_from_address("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty");
 
 	let op_account1 =
 		get_account_id_from_address("5GP7etLvS2VLLfUar7Q2TkQkaxHweYnDvrhh3s5hhf8eorPW");
