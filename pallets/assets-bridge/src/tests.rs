@@ -13,7 +13,7 @@
 
 use crate::{mock::*, to_ascii_hex, EcdsaSignature};
 use frame_support::{assert_noop, assert_ok};
-use sp_core::{H160, U256};
+use sp_core::{ByteArray, H160, U256};
 
 use ethabi::{Function, Param, ParamType, Token};
 use hex_literal::hex;

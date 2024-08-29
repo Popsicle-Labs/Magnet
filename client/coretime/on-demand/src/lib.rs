@@ -31,19 +31,14 @@ use cumulus_primitives_core::{
 };
 use cumulus_relay_chain_interface::{RelayChainInterface, RelayChainResult};
 use futures::{lock::Mutex, pin_mut, select, FutureExt, Stream, StreamExt};
-use mc_coretime_common::is_parathread;
+use mc_coretime_common::{coretime_cores, is_parathread, relaychain_spot_price};
 use metadata::{CoreAssignment, CoreDescriptor};
 use mp_coretime_on_demand::{
-	self,
-	well_known_keys::{
-		paras_core_descriptors, EnqueuedOrder, ACTIVE_CONFIG, ON_DEMAND_QUEUE, SPOT_TRAFFIC,
-	},
-	OrderRecord, OrderRuntimeApi, OrderStatus,
+	self, well_known_keys::paras_core_descriptors, OrderRecord, OrderRuntimeApi, OrderStatus,
 };
 use mp_system::OnRelayChainApi;
 pub use pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi;
 use polkadot_primitives::OccupiedCoreAssumption;
-use runtime_parachains::configuration::HostConfiguration;
 use sc_client_api::UsageProvider;
 use sc_service::TaskManager;
 use sc_transaction_pool_api::{InPoolTransaction, MaintainedTransactionPool};
@@ -55,14 +50,12 @@ use sp_core::H256;
 use sp_keystore::KeystorePtr;
 use sp_runtime::{
 	codec::Encode,
-	traits::{
-		AtLeast32BitUnsigned, Block as BlockT, Header as HeaderT, MaybeDisplay, SaturatedConversion,
-	},
-	FixedPointNumber, FixedU128,
+	traits::{AtLeast32BitUnsigned, Block as BlockT, Header as HeaderT, MaybeDisplay},
 };
-use std::{cmp::Ordering, net::SocketAddr};
+use std::cmp::Ordering;
 use std::{error::Error, fmt::Debug, sync::Arc};
 use submit_order::{build_rpc_for_submit_order, SubmitOrderError};
+use subxt::backend::{legacy::LegacyRpcMethods, rpc::RpcClient};
 use subxt::{OnlineClient, PolkadotConfig};
 
 /// Order type
@@ -84,21 +77,9 @@ async fn get_spot_price<Balance>(
 where
 	Balance: Codec + MaybeDisplay + 'static + Debug + From<u128>,
 {
-	let spot_traffic_storage = relay_chain.get_storage_by_key(hash, SPOT_TRAFFIC).await.ok()?;
-	let p_spot_traffic = spot_traffic_storage
-		.map(|raw| <FixedU128>::decode(&mut &raw[..]))
-		.transpose()
-		.ok()?;
-	let active_config_storage = relay_chain.get_storage_by_key(hash, ACTIVE_CONFIG).await.ok()?;
-	let p_active_config = active_config_storage
-		.map(|raw| <HostConfiguration<u32>>::decode(&mut &raw[..]))
-		.transpose()
-		.ok()?;
-	if p_spot_traffic.is_some() && p_active_config.is_some() {
-		let spot_traffic = p_spot_traffic.unwrap();
-		let active_config = p_active_config.unwrap();
-		let spot_price = spot_traffic
-			.saturating_mul_int(active_config.on_demand_base_fee.saturated_into::<u128>());
+	let p_spot_price = relaychain_spot_price(&relay_chain, hash).await;
+	log::info!("=============p_spot_price:{:?}", p_spot_price);
+	if let Some(spot_price) = p_spot_price {
 		Some(Balance::from(spot_price))
 	} else {
 		None
@@ -107,20 +88,14 @@ where
 
 /// Whether the relay chain has ondemand function enabled.
 async fn start_on_demand(
-	relay_chain: impl RelayChainInterface + Clone,
+	relay_chain: impl RelayChainInterface + Clone + Send,
 	hash: H256,
 	para_id: ParaId,
 ) -> Option<bool> {
-	let active_config_storage = relay_chain.get_storage_by_key(hash, ACTIVE_CONFIG).await.ok()?;
-	// Get config
-	let p_active_config = active_config_storage
-		.map(|raw| <HostConfiguration<u32>>::decode(&mut &raw[..]))
-		.transpose()
-		.ok()?;
-	if let Some(active_config) = p_active_config {
-		let mut result = false;
-		// Get the number of cores.
-		let cores = active_config.coretime_cores;
+	// Get the number of cores.
+	let r_cores = coretime_cores(&relay_chain, hash).await;
+	let mut result = false;
+	if let Some(cores) = r_cores {
 		for core in 0..cores {
 			let key = paras_core_descriptors(polkadot_primitives::CoreIndex(core));
 			let core_descriptors_storage =
@@ -143,11 +118,8 @@ async fn start_on_demand(
 				}
 			}
 		}
-		Some(result)
-	} else {
-		// get config failed
-		Some(false)
 	}
+	Some(result)
 }
 
 /// Create an order to purchase core.
@@ -172,11 +144,13 @@ async fn reach_txpool_threshold<P, Block, ExPool, Balance>(
 	height: RelayBlockNumber,
 	snap_txs: Vec<H256>,
 	core_price: Balance,
+	relay_decimal: u64,
+	parachain_decimal: u64,
 ) -> Option<(bool, OrderType)>
 where
 	Block: BlockT,
 	P: ProvideRuntimeApi<Block> + UsageProvider<Block>,
-	Balance: Codec + MaybeDisplay + 'static + Debug + AtLeast32BitUnsigned + Copy,
+	Balance: Codec + MaybeDisplay + 'static + Debug + AtLeast32BitUnsigned + Copy + From<u128>,
 	P::Api: TransactionPaymentApi<Block, Balance>
 		+ OrderRuntimeApi<Block, Balance>
 		+ OnRelayChainApi<Block>,
@@ -199,14 +173,19 @@ where
 			.ok()?;
 		all_gas_value = query_fee.final_fee().add(all_gas_value);
 		if transaction_pool.status().ready != 0 {
+			let new_core_price = if parachain_decimal >= relay_decimal {
+				core_price.saturating_mul(
+					(10 as u128).pow((parachain_decimal - relay_decimal) as u32).into(),
+				)
+			} else {
+				core_price.checked_div(
+					&(10 as u128).pow((parachain_decimal - relay_decimal) as u32).into(),
+				)?
+			};
 			// Converted to a precision of 18
 			is_place_order = parachain
 				.runtime_api()
-				.reach_txpool_threshold(
-					block_hash,
-					all_gas_value,
-					core_price.saturating_mul(1_000_000u32.into()),
-				)
+				.reach_txpool_threshold(block_hash, all_gas_value, new_core_price)
 				.ok()?;
 		}
 		log::info!(
@@ -282,6 +261,8 @@ async fn handle_relaychain_stream<P, Block, ExPool, Balance>(
 	order_record: Arc<Mutex<OrderRecord>>,
 	transaction_pool: Arc<ExPool>,
 	url: String,
+	relay_decimal: u64,
+	parachain_decimal: u64,
 ) -> Result<(), Box<dyn Error>>
 where
 	Block: BlockT,
@@ -348,31 +329,18 @@ where
 	);
 
 	// Check whether the conditions for placing an order are met, and if so, place the order
-
-	// Check if it is in the ondemand queue, if so, do not place a order.
-	// key = OnDemandAssignmentProvider OnDemandQueue
-	let mut exist_order = false;
-	let on_demand_queue_storage = relay_chain.get_storage_by_key(p_hash, ON_DEMAND_QUEUE).await?;
-	let on_demand_queue = on_demand_queue_storage
-		.map(|raw| <Vec<EnqueuedOrder>>::decode(&mut &raw[..]))
-		.transpose()?;
-	if let Some(vvs) = on_demand_queue.clone() {
-		for vv in vvs.into_iter() {
-			if vv.para_id == para_id {
-				exist_order = true;
-				break;
-			}
-		}
-	}
-	if exist_order {
-		let mut order_record_local = order_record.lock().await;
-		order_record_local.order_status = OrderStatus::Complete;
-		return Ok(());
-	}
 	// get on demand core price
 	let max_amount = parachain.runtime_api().order_max_amount(hash)?;
 	let p_spot_price = get_spot_price::<Balance>(relay_chain.clone(), p_hash).await;
-	let spot_price = if let Some(pot_price) = p_spot_price { pot_price } else { max_amount };
+	let (spot_price, place_price) = if let Some(spot_price) = p_spot_price {
+		if spot_price > max_amount {
+			(spot_price, spot_price)
+		} else {
+			(spot_price, max_amount)
+		}
+	} else {
+		(max_amount, max_amount)
+	};
 	// Check whether the gas of the transaction pool has reached the spot price threshold.
 	let mut order_record_local = order_record.lock().await;
 
@@ -382,6 +350,8 @@ where
 		height,
 		order_record_local.txs.clone(),
 		spot_price,
+		relay_decimal,
+		parachain_decimal,
 	)
 	.await;
 	let mut can_order = false;
@@ -409,7 +379,7 @@ where
 					order_record_local.author_pub = Some(author);
 					order_record_local.txs = get_txs(transaction_pool).await;
 					let order_result =
-						try_place_order::<Balance>(keystore, para_id, url, spot_price).await;
+						try_place_order::<Balance>(keystore, para_id, url, place_price).await;
 					order_record_local.order_status = OrderStatus::Order;
 					if order_result.is_ok() {
 						log::info!("===========place order successfully",);
@@ -451,6 +421,7 @@ async fn relay_chain_notification<P, R, Block, ExPool, Balance>(
 	order_record: Arc<Mutex<OrderRecord>>,
 	transaction_pool: Arc<ExPool>,
 	url: String,
+	parachain_decimal: u64,
 ) where
 	R: RelayChainInterface + Clone,
 	Block: BlockT,
@@ -469,6 +440,14 @@ async fn relay_chain_notification<P, R, Block, ExPool, Balance>(
 		+ OnRelayChainApi<Block>,
 	ExPool: MaintainedTransactionPool<Block = Block, Hash = <Block as BlockT>::Hash> + 'static,
 {
+	let rpc_client = RpcClient::from_url(url.clone()).await.expect("rpc connect failed");
+	let rpc = LegacyRpcMethods::<PolkadotConfig>::new(rpc_client.clone());
+	let properties = rpc.system_properties().await.expect("can't get relaychain properties");
+	let relay_decimal = properties
+		.get("tokenDecimals")
+		.and_then(|v| v.as_u64())
+		.expect("can't get relaychain token decimal");
+
 	let new_best_heads = match new_best_heads(relay_chain.clone(), para_id).await {
 		Ok(best_heads_stream) => best_heads_stream.fuse(),
 		Err(_err) => {
@@ -481,7 +460,7 @@ async fn relay_chain_notification<P, R, Block, ExPool, Balance>(
 			h = new_best_heads.next() => {
 				match h {
 					Some((height, head, hash)) => {
-						let _ = handle_relaychain_stream(head,height, &*parachain,keystore.clone(), relay_chain.clone(), hash, para_id, order_record.clone(),transaction_pool.clone(), url.clone()).await;
+						let _ = handle_relaychain_stream(head,height, &*parachain,keystore.clone(), relay_chain.clone(), hash, para_id, order_record.clone(),transaction_pool.clone(), url.clone(), relay_decimal, parachain_decimal).await;
 					},
 					None => {
 						return;
@@ -499,7 +478,7 @@ pub async fn ondemand_event_task(
 ) -> Result<(), Box<dyn Error>> {
 	// Get the final block of the relaychain through subxt.
 
-	let api = OnlineClient::<PolkadotConfig>::from_url(rpc_url).await?;
+	let api = OnlineClient::<PolkadotConfig>::from_url(rpc_url.clone()).await?;
 
 	let mut blocks_sub = api.blocks().subscribe_best().await?;
 
@@ -511,7 +490,7 @@ pub async fn ondemand_event_task(
 		for event in events.iter() {
 			let event = event?;
 			// Query Broker Assigned Event
-			let ev_order_placed = event.as_event::<metadata::OnDemandOrderPlaced>();
+			let ev_order_placed = event.as_event::<metadata::OnDemandOrderPlacedV0>();
 			if let Ok(order_placed_event) = ev_order_placed {
 				if let Some(ev) = order_placed_event {
 					log::info!(
@@ -547,6 +526,7 @@ pub async fn run_on_demand_task<P, R, Block, ExPool, Balance>(
 	order_record: Arc<Mutex<OrderRecord>>,
 	transaction_pool: Arc<ExPool>,
 	url: String,
+	parachain_decimal: u64,
 ) where
 	R: RelayChainInterface + Clone,
 	Block: BlockT,
@@ -573,6 +553,7 @@ pub async fn run_on_demand_task<P, R, Block, ExPool, Balance>(
 		order_record.clone(),
 		transaction_pool,
 		url.clone(),
+		parachain_decimal,
 	);
 	let event_notification = event_notification(para_id, url, order_record);
 	select! {
@@ -589,7 +570,8 @@ pub fn spawn_on_demand_order<T, R, ExPool, Block, Balance>(
 	task_manager: &TaskManager,
 	keystore: KeystorePtr,
 	order_record: Arc<Mutex<OrderRecord>>,
-	relay_rpc: Option<SocketAddr>,
+	relay_rpc: String,
+	parachain_decimal: u64,
 ) -> sc_service::error::Result<()>
 where
 	Block: BlockT,
@@ -610,9 +592,6 @@ where
 		+ TransactionPaymentApi<Block, Balance>
 		+ OnRelayChainApi<Block>,
 {
-	let mut url = String::from("ws://");
-	url.push_str(&relay_rpc.expect("Should set rpc address for submit order extrinic").to_string());
-
 	let on_demand_order_task = run_on_demand_task(
 		para_id,
 		parachain.clone(),
@@ -620,7 +599,8 @@ where
 		keystore,
 		order_record,
 		transaction_pool.clone(),
-		url,
+		relay_rpc,
+		parachain_decimal,
 	);
 	task_manager.spawn_essential_handle().spawn_blocking(
 		"on demand order task",

@@ -29,12 +29,12 @@ use futures::{lock::Mutex, select, FutureExt};
 use mc_coretime_common::is_parathread;
 use mp_coretime_bulk::{
 	self, well_known_keys::broker_regions, BulkMemRecord, BulkMemRecordItem, BulkRuntimeApi,
-	BulkStatus,
+	BulkStatus, RegionRecord, RegionRecordV0,
 };
 use mp_coretime_common::{
 	chain_state_snapshot::GenericStateProof, well_known_keys::SYSTEM_BLOCKHASH_GENESIS,
 };
-use pallet_broker::{CoreMask, RegionId, RegionRecord};
+use pallet_broker::{CoreMask, RegionId};
 use polkadot_primitives::{AccountId, Balance};
 use sc_client_api::UsageProvider;
 use sc_service::TaskManager;
@@ -80,7 +80,7 @@ where
 
 	let api = OnlineClient::<PolkadotConfig>::from_url(rpc_url).await?;
 
-	let mut blocks_sub = api.blocks().subscribe_best().await?;
+	let mut blocks_sub = api.blocks().subscribe_finalized().await?;
 
 	// For each block, print a bunch of information about it:
 	while let Some(block) = blocks_sub.next().await {
@@ -93,9 +93,18 @@ where
 			continue;
 		}
 		let block_number = block.header().number;
+		let block_hash = block.hash();
 
 		let mut bulk_record_local = bulk_record.lock().await;
 		bulk_record_local.coretime_para_height = block_number;
+		let record_index = parachain.runtime_api().record_index(hash)?;
+		// Remove useless item.
+		let record_items = &mut bulk_record_local.items;
+		if let Some(pos) = record_items.iter().position(|item| {
+			(item.status == BulkStatus::CoreAssigned) && (item.record_index + 1 == record_index)
+		}) {
+			record_items.remove(pos);
+		}
 		let events = block.events().await?;
 		for event in events.iter() {
 			let event = event?;
@@ -136,10 +145,8 @@ where
 						relevant_keys.push(region_key.as_slice());
 						relevant_keys.push(block_hash_key);
 
-						let proof = rpc
-							.state_get_read_proof(relevant_keys, Some(events.block_hash()))
-							.await
-							.unwrap();
+						let proof =
+							rpc.state_get_read_proof(relevant_keys, Some(block_hash)).await?;
 						let storage_proof =
 							StorageProof::new(proof.proof.into_iter().map(|bytes| bytes.to_vec()));
 
@@ -155,8 +162,23 @@ where
 								None,
 							)
 							.ok();
+						let mut proof_gen = false;
 						// Check proof is ok.
 						if head_data.is_some() {
+							proof_gen = true;
+						} else {
+							// decode to lower version
+							let head_data = relay_storage_rooted_proof
+								.read_entry::<RegionRecordV0<AccountId, Balance>>(
+									region_key.as_slice(),
+									None,
+								)
+								.ok();
+							if head_data.is_some() {
+								proof_gen = true;
+							}
+						}
+						if proof_gen {
 							// Record some data.
 							let record_item = BulkMemRecordItem {
 								storage_proof,
@@ -166,6 +188,7 @@ where
 								status: BulkStatus::Assigned,
 								start_relaychain_height: 0,
 								end_relaychain_height: 0,
+								record_index,
 							};
 							bulk_record_local.items.push(record_item);
 						}
@@ -176,7 +199,6 @@ where
 
 			// Query CoreAssigned event.
 			let ev_core_assigned = event.as_event::<metadata::CoreAssigned>();
-
 			if let Ok(core_assigned_event) = ev_core_assigned {
 				if let Some(ev) = core_assigned_event {
 					log::info!(
@@ -219,7 +241,6 @@ where
 			}
 		}
 	}
-
 	Ok(())
 }
 pub async fn run_coretime_bulk_task<P, R, Block>(
@@ -235,9 +256,10 @@ pub async fn run_coretime_bulk_task<P, R, Block>(
 {
 	let bulk_task = async move {
 		loop {
-			let _ =
+			let result =
 				coretime_bulk_task(&*parachain, relay_chain.clone(), para_id, bulk_record.clone())
 					.await;
+			log::info!("==============run_coretime_bulk_task result:{:?}", result);
 		}
 	};
 	select! {

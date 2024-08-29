@@ -12,98 +12,104 @@ edition.workspace = true
 targets = ["x86_64-unknown-linux-gnu"]
 
 [build-dependencies]
-substrate-wasm-builder = { workspace = true, optional = true }
+substrate-wasm-builder = { optional = true, workspace = true, default-features = true }
+docify = { workspace = true }
 
 [dependencies]
-codec = { package = "parity-scale-codec", workspace = true, default-features = false, features = ["derive"] }
-hex-literal = { workspace = true, optional = true }
-log = { workspace = true, default-features = false }
-scale-info = { workspace = true, default-features = false, features = ["derive"] }
-smallvec = { workspace = true }
+codec = { features = [
+	"derive",
+], workspace = true }
+hex-literal = { optional = true, workspace = true, default-features = true }
+log = { workspace = true }
+scale-info = { features = [
+	"derive",
+], workspace = true }
+smallvec = { workspace = true, default-features = true }
+docify = { workspace = true }
+frame-benchmarking = { optional = true, workspace = true }
+frame-executive.workspace = true
+frame-metadata-hash-extension.workspace = true
+frame-support = { features = ["experimental"], workspace = true }
+frame-system.workspace = true
+frame-system-benchmarking = { optional = true, workspace = true }
+frame-system-rpc-runtime-api.workspace = true
+frame-try-runtime = { optional = true, workspace = true }
+pallet-aura.workspace = true
+pallet-authorship.workspace = true
+pallet-balances.workspace = true
+pallet-message-queue.workspace = true
+pallet-session.workspace = true
+pallet-sudo.workspace = true
+pallet-timestamp.workspace = true
+pallet-transaction-payment.workspace = true
+pallet-transaction-payment-rpc-runtime-api.workspace = true
+sp-api.workspace = true
+sp-block-builder.workspace = true
+sp-consensus-aura.workspace = true
+sp-core.workspace = true
+sp-genesis-builder.workspace = true
+sp-inherents.workspace = true
+sp-offchain.workspace = true
+sp-runtime.workspace = true
+sp-session.workspace = true
+sp-transaction-pool.workspace = true
+sp-version.workspace = true
+pallet-xcm.workspace = true
+polkadot-parachain-primitives.workspace = true
+polkadot-runtime-common.workspace = true
+xcm.workspace = true
+xcm-builder.workspace = true
+xcm-executor.workspace = true
+cumulus-pallet-aura-ext.workspace = true
+cumulus-pallet-parachain-system.workspace = true
+cumulus-pallet-session-benchmarking.workspace = true
+cumulus-pallet-xcm.workspace = true
+cumulus-pallet-xcmp-queue.workspace = true
+cumulus-primitives-aura.workspace = true
+cumulus-primitives-core.workspace = true
+cumulus-primitives-utility.workspace = true
+cumulus-primitives-storage-weight-reclaim.workspace = true
+pallet-collator-selection.workspace = true
+parachains-common.workspace = true
+parachain-info.workspace = true
+
+# Polkadot
+polkadot-primitives = { workspace = true, default-features = false}
+
+# Substrate
+sp-std = { workspace = true, default-features = false}
+pallet-assets = { workspace = true, default-features = false}
+pallet-utility = { workspace = true, default-features = false}
+pallet-conviction-voting = { workspace = true, default-features = false}
+pallet-whitelist = { workspace = true, default-features = false}
+pallet-preimage = { workspace = true, default-features = false}
+pallet-ranked-collective = { workspace = true, default-features = false}
+sp-arithmetic = { workspace = true, default-features = false}
+pallet-scheduler = { workspace = true, default-features = false}
+pallet-referenda = { workspace = true, default-features = false}
+pallet-collective = { workspace = true, default-features = false}
+pallet-insecure-randomness-collective-flip = { workspace = true, default-features = false}
+pallet-contracts = { workspace = true, default-features = false}
+pallet-multisig = { workspace = true, default-features = false }
+pallet-proxy = { workspace = true, default-features = false }
 
 # Local
 mp-system = { path = "../primitives/system", default-features = false }
-pallet-assets-bridge = { path = "../pallets/assets-bridge", default-features = false }
 pallet-evm-utils = { path = "../pallets/evm-utils", default-features = false }
 pallet-precompile-substrate-utils = { path = "../pallets/evm/precompile/substrate-utils", default-features = false }
 pallet-precompile-transfer-to-magnet = { path = "../pallets/evm/precompile/transfer-to-magnet", default-features = false }
+pallet-assets-bridge = { path = "../pallets/assets-bridge", default-features = false }
+pallet-on-demand = { path = "../pallets/on-demand", default-features = false }
+mp-coretime-bulk = { path = "../primitives/coretime/bulk", default-features = false }
+mp-coretime-on-demand = { path = "../primitives/coretime/on-demand", default-features = false }
 pallet-pot = { path = "../pallets/pot", default-features = false }
 pallet-pot-runtime-api = { path = "../pallets/pot/runtime-api", default-features = false }
 pallet-assurance = { path = "../pallets/assurance", default-features = false }
 pallet-liquidation = {path = "../pallets/liquidation", default-features = false}
 pallet-bulk = { path = "../pallets/bulk", default-features = false }
-pallet-on-demand = { path = "../pallets/on-demand", default-features = false }
-mp-coretime-bulk = { path = "../primitives/coretime/bulk", default-features = false }
-mp-coretime-on-demand = { path = "../primitives/coretime/on-demand", default-features = false }
 
-# Substrate
-frame-benchmarking = { workspace = true, default-features = false, optional = true}
-frame-executive = { workspace = true, default-features = false}
-frame-support = { workspace = true, default-features = false}
-frame-system = { workspace = true, default-features = false}
-frame-system-benchmarking = { workspace = true, default-features = false, optional = true}
-frame-system-rpc-runtime-api = { workspace = true, default-features = false}
-frame-try-runtime = { workspace = true, default-features = false, optional = true}
-pallet-aura = { workspace = true, default-features = false}
-pallet-authorship = { workspace = true, default-features = false}
-pallet-balances = { workspace = true, default-features = false}
-pallet-assets = { workspace = true, default-features = false}
-pallet-preimage = { workspace = true, default-features = false}
-pallet-session = { workspace = true, default-features = false}
-pallet-sudo = { workspace = true, default-features = false}
-pallet-collective = { workspace = true, default-features = false}
-pallet-timestamp = { workspace = true, default-features = false}
-pallet-transaction-payment = { workspace = true, default-features = false}
-pallet-transaction-payment-rpc-runtime-api = { workspace = true, default-features = false}
-sp-api = { workspace = true, default-features = false}
-sp-block-builder = { workspace = true, default-features = false}
-sp-genesis-builder = { workspace = true, default-features = false}
-sp-consensus-aura = { workspace = true, default-features = false}
-sp-core = { workspace = true, default-features = false}
-sp-inherents = { workspace = true, default-features = false}
-sp-offchain = { workspace = true, default-features = false}
-sp-runtime = { workspace = true, default-features = false}
-sp-session = { workspace = true, default-features = false}
-sp-std = { workspace = true, default-features = false}
-sp-transaction-pool = { workspace = true, default-features = false}
-sp-version = { workspace = true, default-features = false}
-sp-trie = { workspace = true, default-features = false }
-pallet-society ={ workspace = true, default-features = false}
-pallet-utility = { workspace = true, default-features = false}
-sp-arithmetic = { workspace = true, default-features = false}
-pallet-referenda = { workspace = true, default-features = false}
-pallet-whitelist = { workspace = true, default-features = false}
-pallet-conviction-voting = { workspace = true, default-features = false}
-pallet-ranked-collective = { workspace = true, default-features = false}
-pallet-scheduler = { workspace = true, default-features = false}
-pallet-insecure-randomness-collective-flip = { workspace = true, default-features = false}
-pallet-contracts = { workspace = true, default-features = false}
-pallet-message-queue = { workspace = true, default-features = false }
-pallet-multisig = { workspace = true, default-features = false }
-pallet-proxy = { workspace = true, default-features = false }
-
-# Polkadot
-pallet-xcm = { workspace = true, default-features = false}
-polkadot-parachain-primitives = { workspace = true, default-features = false}
-polkadot-primitives = { workspace = true, default-features = false}
-polkadot-runtime-common = { workspace = true, default-features = false}
-xcm = { workspace = true, default-features = false}
-xcm-builder = { workspace = true, default-features = false}
-xcm-executor = { workspace = true, default-features = false}
-
-# Cumulus
-cumulus-pallet-aura-ext = { workspace = true, default-features = false }
-cumulus-pallet-parachain-system = { workspace = true, default-features = false, features = ["parameterized-consensus-hook",] }
-cumulus-pallet-session-benchmarking = { workspace = true, default-features = false}
-cumulus-pallet-xcm = { workspace = true, default-features = false }
-cumulus-pallet-xcmp-queue = { workspace = true, default-features = false }
-cumulus-primitives-core = { workspace = true, default-features = false }
-cumulus-primitives-utility = { workspace = true, default-features = false }
-pallet-collator-selection = { workspace = true, default-features = false }
-parachain-info = { workspace = true, default-features = false }
-parachains-common = { workspace = true, default-features = false }
-cumulus-primitives-timestamp ={ workspace = true, default-features = false }
-cumulus-primitives-aura ={ workspace = true, default-features = false }
+#move pallet
+pallet-move = { workspace = true, default-features = false }
 
 #Frontier FRAME
 pallet-evm-chain-id = { workspace = true, default-features = false }
@@ -122,9 +128,6 @@ fp-dynamic-fee = { workspace = true, default-features = false }
 fp-rpc = { workspace = true, default-features = false }
 fp-self-contained = { workspace = true, default-features = false, features = ["serde", "try-runtime"] }
 
-#move pallet
-pallet-move = { workspace = true, default-features = false }
-
 [features]
 default = ["std", "with-rocksdb-weights"]
 with-rocksdb-weights = []
@@ -136,10 +139,13 @@ std = [
 	"cumulus-pallet-session-benchmarking/std",
 	"cumulus-pallet-xcm/std",
 	"cumulus-pallet-xcmp-queue/std",
+	"cumulus-primitives-aura/std",
 	"cumulus-primitives-core/std",
+	"cumulus-primitives-storage-weight-reclaim/std",
 	"cumulus-primitives-utility/std",
 	"frame-benchmarking?/std",
 	"frame-executive/std",
+	"frame-metadata-hash-extension/std",
 	"frame-support/std",
 	"frame-system-benchmarking?/std",
 	"frame-system-rpc-runtime-api/std",
@@ -158,6 +164,7 @@ std = [
 	"pallet-transaction-payment/std",
 	"pallet-xcm/std",
 	"parachain-info/std",
+	"parachains-common/std",
 	"polkadot-parachain-primitives/std",
 	"polkadot-runtime-common/std",
 	"scale-info/std",
@@ -170,13 +177,23 @@ std = [
 	"sp-offchain/std",
 	"sp-runtime/std",
 	"sp-session/std",
-	"sp-std/std",
 	"sp-transaction-pool/std",
 	"sp-version/std",
 	"substrate-wasm-builder",
 	"xcm-builder/std",
 	"xcm-executor/std",
 	"xcm/std",
+	"sp-std/std",
+	"pallet-assets/std",
+	"pallet-utility/std",
+	"pallet-conviction-voting/std",
+	"pallet-referenda/std",
+	"pallet-whitelist/std",
+	"pallet-preimage/std",
+	"pallet-ranked-collective/std",
+	"polkadot-primitives/std",
+	"pallet-collective/std",
+	# Frontier
 	"pallet-evm-chain-id/std",
 	"pallet-evm/std",
 	"pallet-ethereum/std",
@@ -190,43 +207,31 @@ std = [
 	"fp-account/std",
 	"fp-dynamic-fee/std",
 	"fp-rpc/std",
-	"polkadot-primitives/std",
-	"parachains-common/std",
-	"pallet-collective/std",
 	"fp-self-contained/std",
-	"pallet-assets/std",
-	"pallet-assets-bridge/std",
 	"pallet-evm-utils/std",
 	"pallet-precompile-substrate-utils/std",
 	"pallet-precompile-transfer-to-magnet/std",
-	"sp-trie/std",
-	"cumulus-primitives-timestamp/std",
-    "pallet-liquidation/std",
-	"pallet-utility/std",
-	"pallet-pot/std",
-	"pallet-assurance/std",
-	"pallet-preimage/std",
-	"pallet-referenda/std",
-	"pallet-whitelist/std",
-	"pallet-conviction-voting/std",
-	"pallet-ranked-collective/std",
+	"pallet-assets-bridge/std",
 	"pallet-scheduler/std",
-	"pallet-insecure-randomness-collective-flip/std",
-	"pallet-contracts/std",
-	"cumulus-primitives-aura/std",
-	"pallet-move/std",
-	"pallet-multisig/std",
-	"pallet-proxy/std",
-	"pallet-bulk/std",
-	"mp-coretime-bulk/std",
 	"pallet-on-demand/std",
 	"mp-coretime-on-demand/std",
+	"pallet-pot/std",
+	"pallet-assurance/std",
+    "pallet-liquidation/std",
+	"pallet-bulk/std",
+	"pallet-insecure-randomness-collective-flip/std",
+	"pallet-contracts/std",
+	"pallet-multisig/std",
+	"pallet-proxy/std",
+	"pallet-move/std",
 ]
 
 runtime-benchmarks = [
 	"cumulus-pallet-parachain-system/runtime-benchmarks",
 	"cumulus-pallet-session-benchmarking/runtime-benchmarks",
 	"cumulus-pallet-xcmp-queue/runtime-benchmarks",
+	"cumulus-primitives-core/runtime-benchmarks",
+	"cumulus-primitives-utility/runtime-benchmarks",
 	"frame-benchmarking/runtime-benchmarks",
 	"frame-support/runtime-benchmarks",
 	"frame-system-benchmarking/runtime-benchmarks",
@@ -238,43 +243,34 @@ runtime-benchmarks = [
 	"pallet-sudo/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"pallet-xcm/runtime-benchmarks",
+	"parachains-common/runtime-benchmarks",
 	"polkadot-parachain-primitives/runtime-benchmarks",
 	"polkadot-runtime-common/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 	"xcm-builder/runtime-benchmarks",
 	"xcm-executor/runtime-benchmarks",
-	"pallet-evm-utils/runtime-benchmarks",
-	"pallet-precompile-substrate-utils/runtime-benchmarks",
-	"pallet-precompile-transfer-to-magnet/runtime-benchmarks",
-	"pallet-on-demand/runtime-benchmarks",
-	"pallet-collective/runtime-benchmarks",
-	"pallet-society/runtime-benchmarks",
-	"pallet-evm/runtime-benchmarks",
-	"pallet-ethereum/runtime-benchmarks",
-    "pallet-liquidation/runtime-benchmarks",
 	"pallet-utility/runtime-benchmarks",
-	"pallet-pot/runtime-benchmarks",
-	"pallet-assurance/runtime-benchmarks",
-	"pallet-preimage/runtime-benchmarks",
+	"pallet-conviction-voting/runtime-benchmarks",
 	"pallet-referenda/runtime-benchmarks",
 	"pallet-whitelist/runtime-benchmarks",
-	"pallet-conviction-voting/runtime-benchmarks",
+	"pallet-preimage/runtime-benchmarks",
 	"pallet-ranked-collective/runtime-benchmarks",
-	"pallet-scheduler/runtime-benchmarks",
+	"pallet-collective/runtime-benchmarks",
+	"pallet-on-demand/runtime-benchmarks",
+	"pallet-pot/runtime-benchmarks",
+	"pallet-assurance/runtime-benchmarks",
+    "pallet-liquidation/runtime-benchmarks",
+	"pallet-bulk/runtime-benchmarks",
 	"pallet-contracts/runtime-benchmarks",
-	"pallet-move/runtime-benchmarks",
 	"pallet-multisig/runtime-benchmarks",
 	"pallet-proxy/runtime-benchmarks",
-	"pallet-bulk/runtime-benchmarks",
 ]
 
 try-runtime = [
-	"cumulus-pallet-parachain-system/try-runtime",
 	"cumulus-pallet-aura-ext/try-runtime",
 	"cumulus-pallet-parachain-system/try-runtime",
 	"cumulus-pallet-xcm/try-runtime",
 	"cumulus-pallet-xcmp-queue/try-runtime",
-	"cumulus-pallet-xcm/try-runtime",
 	"frame-executive/try-runtime",
 	"frame-support/try-runtime",
 	"frame-system/try-runtime",
@@ -292,35 +288,30 @@ try-runtime = [
 	"parachain-info/try-runtime",
 	"polkadot-runtime-common/try-runtime",
 	"sp-runtime/try-runtime",
-	"pallet-evm-utils/try-runtime",
-	"pallet-precompile-substrate-utils/try-runtime",
-	"pallet-precompile-transfer-to-magnet/try-runtime",
-    "pallet-liquidation/try-runtime",
-	"pallet-assets/try-runtime",
-	"pallet-assets-bridge/try-runtime",
-	"pallet-collective/try-runtime",
-	"pallet-collator-selection/try-runtime",
-	"pallet-evm-chain-id/try-runtime",
-	"pallet-evm/try-runtime",
-	"pallet-ethereum/try-runtime",
-	"pallet-base-fee/try-runtime",
-	"pallet-dynamic-fee/try-runtime",
-	"pallet-hotfix-sufficients/try-runtime",
-	"pallet-pot/try-runtime",
-	"pallet-assurance/try-runtime",
 	"pallet-utility/try-runtime",
-	"pallet-assurance/try-runtime",
-	"pallet-preimage/try-runtime",
+	"pallet-conviction-voting/try-runtime",
 	"pallet-referenda/try-runtime",
 	"pallet-whitelist/try-runtime",
-	"pallet-conviction-voting/try-runtime",
+	"pallet-preimage/try-runtime",
 	"pallet-ranked-collective/try-runtime",
-	"pallet-scheduler/try-runtime",
+	"pallet-collective/try-runtime",
+	"pallet-pot/try-runtime",
+    "pallet-liquidation/try-runtime",
 	"pallet-insecure-randomness-collective-flip/try-runtime",
 	"pallet-contracts/try-runtime",
-	"pallet-move/try-runtime",
 	"pallet-multisig/try-runtime",
 	"pallet-proxy/try-runtime",
 ]
 
-experimental = [ "pallet-aura/experimental" ]
+# Enable the metadata hash generation.
+#
+# This is hidden behind a feature because it increases the compile time.
+# The wasm binary needs to be compiled twice, once to fetch the metadata,
+# generate the metadata hash and then a second time with the
+# `RUNTIME_METADATA_HASH` environment variable set for the `CheckMetadataHash`
+# extension.
+metadata-hash = ["substrate-wasm-builder/metadata-hash"]
+
+# A convenience feature for enabling things when doing a build
+# for an on-chain release.
+on-chain-release-build = ["metadata-hash"]

@@ -6,7 +6,7 @@ use frame_support::{
 	parameter_types,
 	traits::{ConstBool, ConstU32},
 };
-
+use frame_system::EnsureSigned;
 pub enum AllowBalancesCall {}
 
 impl frame_support::traits::Contains<RuntimeCall> for AllowBalancesCall {
@@ -69,6 +69,9 @@ impl pallet_contracts::Config for Runtime {
 	type MaxStorageKeyLen = ConstU32<128>;
 	type MaxDebugBufferLen = ConstU32<{ 2 * 1024 * 1024 }>;
 	type UnsafeUnstableInterface = ConstBool<false>;
+	type UploadOrigin = EnsureSigned<Self::AccountId>;
+	type InstantiateOrigin = EnsureSigned<Self::AccountId>;
+	type MaxTransientStorageSize = ConstU32<{ 1 * 1024 * 1024 }>;
 	type CodeHashLockupDepositPercent = CodeHashLockupDepositPercent;
 	type MaxDelegateDependencies = MaxDelegateDependencies;
 	type RuntimeHoldReason = RuntimeHoldReason;
@@ -77,4 +80,5 @@ impl pallet_contracts::Config for Runtime {
 	type Debug = ();
 	type Migrations = ();
 	type Xcm = ();
+	type ApiVersion = ();
 }

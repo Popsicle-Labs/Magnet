@@ -1,17 +1,16 @@
 use cumulus_primitives_core::ParaId;
-use parachain_magnet_runtime::{AccountId, AuraId, Signature, EXISTENTIAL_DEPOSIT};
+use parachain_magnet_runtime as runtime;
+use runtime::{AccountId, AuraId, Signature, EXISTENTIAL_DEPOSIT};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
-use sp_core::{crypto::Ss58Codec, sr25519, Pair, Public, H160, U256};
+use sp_core::{crypto::Ss58Codec, sr25519, Pair, Public, H160, H256, U256};
 use sp_runtime::traits::{IdentifyAccount, Verify};
 use sp_runtime::AccountId32;
-use sp_std::marker::PhantomData;
 use std::{collections::BTreeMap, str::FromStr};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
-pub type ChainSpec =
-	sc_service::GenericChainSpec<parachain_magnet_runtime::RuntimeGenesisConfig, Extensions>;
+pub type ChainSpec = sc_service::GenericChainSpec<Extensions>;
 
 /// The default XCM version to set in genesis config.
 const SAFE_XCM_VERSION: u32 = xcm::prelude::XCM_VERSION;
@@ -25,11 +24,12 @@ pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Pu
 
 /// The extensions for the [`ChainSpec`].
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ChainSpecGroup, ChainSpecExtension)]
-#[serde(deny_unknown_fields)]
 pub struct Extensions {
 	/// The relay chain of the Parachain.
+	#[serde(alias = "relayChain", alias = "RelayChain")]
 	pub relay_chain: String,
 	/// The id of the Parachain.
+	#[serde(alias = "paraId", alias = "ParaId")]
 	pub para_id: u32,
 }
 
@@ -70,8 +70,8 @@ fn get_account_id_from_address(address: &str) -> AccountId32 {
 /// Generate the session keys from individual elements.
 ///
 /// The input must be a tuple of individual keys (a single arg for now since we have just one key).
-pub fn template_session_keys(keys: AuraId) -> parachain_magnet_runtime::SessionKeys {
-	parachain_magnet_runtime::SessionKeys { aura: keys }
+pub fn template_session_keys(keys: AuraId) -> runtime::SessionKeys {
+	runtime::SessionKeys { aura: keys }
 }
 
 pub fn development_config() -> ChainSpec {
@@ -82,7 +82,7 @@ pub fn development_config() -> ChainSpec {
 	properties.insert("ss58Format".into(), 42.into());
 
 	ChainSpec::builder(
-		parachain_magnet_runtime::WASM_BINARY.expect("WASM binary was not built, please build it!"),
+		runtime::WASM_BINARY.expect("WASM binary was not built, please build it!"),
 		Extensions {
 			relay_chain: "rococo-local".into(),
 			// You MUST set this to the correct network!
@@ -129,7 +129,7 @@ pub fn local_testnet_config() -> ChainSpec {
 
 	#[allow(deprecated)]
 	ChainSpec::builder(
-		parachain_magnet_runtime::WASM_BINARY.expect("WASM binary was not built, please build it!"),
+		runtime::WASM_BINARY.expect("WASM binary was not built, please build it!"),
 		Extensions {
 			relay_chain: "rococo-local".into(),
 			// You MUST set this to the correct network!
@@ -297,7 +297,7 @@ fn testnet_genesis(
 		},
 		"bulkPallet":{
 			"rpcUrl": b"ws://127.0.0.1:8855".to_vec(),
-			"genesisHash": U256::from_str("0x4ea18c8f295ba903acbbed39c70ea0569cf1705fa954a537ffa3b8b7125eaf58").expect("internal U256 is valid; qed")
+			"genesisHash": H256::from_str("0x016f9d0bc355e718ce950727cd423d4915f34ded0a94f466242446b8865e061f").expect("genesis hash error.")
 		},
 		"orderPallet": {
 			"slotWidth": 3,

@@ -265,7 +265,6 @@ impl<
 /// Weight trader which uses the configured `WeightToFee` to set the right price for weight and then
 /// places any weight bought into the right account.
 // use PrecisionMultiplier for different precision between relaychain and Magnet
-use frame_support::traits::Imbalance;
 const PRECISION_MULTIPLIER: u128 = 1_000_000;
 
 pub struct UsingComponentsEx<

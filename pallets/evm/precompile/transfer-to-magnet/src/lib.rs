@@ -208,6 +208,7 @@ where
 		BASE + (input.len() as u64 / 32 * WORD)
 	}
 
+	#[allow(dead_code)]
 	fn ensure_linear_cost(
 		target_gas: Option<u64>,
 		len: u64,

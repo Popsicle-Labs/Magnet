@@ -47,30 +47,30 @@ use core::marker::PhantomData;
 /// Weight functions for `pallet_scheduler`.
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> pallet_scheduler::WeightInfo for WeightInfo<T> {
-	/// Storage: Scheduler IncompleteSince (r:1 w:1)
-	/// Proof: Scheduler IncompleteSince (max_values: Some(1), max_size: Some(4), added: 499, mode: MaxEncodedLen)
+	/// Storage: `Scheduler::IncompleteSince` (r:1 w:1)
+	/// Proof: `Scheduler::IncompleteSince` (`max_values`: Some(1), `max_size`: Some(4), added: 499, mode: `MaxEncodedLen`)
 	fn service_agendas_base() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `69`
+		//  Measured:  `31`
 		//  Estimated: `1489`
-		// Minimum execution time: 4_741_000 picoseconds.
-		Weight::from_parts(4_939_000, 0)
+		// Minimum execution time: 2_475_000 picoseconds.
+		Weight::from_parts(2_644_000, 0)
 			.saturating_add(Weight::from_parts(0, 1489))
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
-	/// Storage: Scheduler Agenda (r:1 w:1)
-	/// Proof: Scheduler Agenda (max_values: None, max_size: Some(38963), added: 41438, mode: MaxEncodedLen)
-	/// The range of component `s` is `[0, 50]`.
+	/// Storage: `Scheduler::Agenda` (r:1 w:1)
+	/// Proof: `Scheduler::Agenda` (`max_values`: None, `max_size`: Some(155814), added: 158289, mode: `MaxEncodedLen`)
+	/// The range of component `s` is `[0, 200]`.
 	fn service_agenda_base(s: u32, ) -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `116 + s * (177 ±0)`
-		//  Estimated: `42428`
-		// Minimum execution time: 4_504_000 picoseconds.
-		Weight::from_parts(7_569_333, 0)
-			.saturating_add(Weight::from_parts(0, 42428))
-			// Standard Error: 1_818
-			.saturating_add(Weight::from_parts(771_180, 0).saturating_mul(s.into()))
+		//  Measured:  `77 + s * (177 ±0)`
+		//  Estimated: `159279`
+		// Minimum execution time: 2_898_000 picoseconds.
+		Weight::from_parts(1_532_342, 0)
+			.saturating_add(Weight::from_parts(0, 159279))
+			// Standard Error: 4_736
+			.saturating_add(Weight::from_parts(412_374, 0).saturating_mul(s.into()))
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
@@ -78,36 +78,38 @@ impl<T: frame_system::Config> pallet_scheduler::WeightInfo for WeightInfo<T> {
 		// Proof Size summary in bytes:
 		//  Measured:  `0`
 		//  Estimated: `0`
-		// Minimum execution time: 5_709_000 picoseconds.
-		Weight::from_parts(5_929_000, 0)
+		// Minimum execution time: 3_171_000 picoseconds.
+		Weight::from_parts(3_349_000, 0)
 			.saturating_add(Weight::from_parts(0, 0))
 	}
-	/// Storage: Preimage PreimageFor (r:1 w:1)
-	/// Proof: Preimage PreimageFor (max_values: None, max_size: Some(4194344), added: 4196819, mode: Measured)
-	/// Storage: Preimage StatusFor (r:1 w:1)
-	/// Proof: Preimage StatusFor (max_values: None, max_size: Some(91), added: 2566, mode: MaxEncodedLen)
+	/// Storage: `Preimage::PreimageFor` (r:1 w:1)
+	/// Proof: `Preimage::PreimageFor` (`max_values`: None, `max_size`: Some(4194344), added: 4196819, mode: `Measured`)
+	/// Storage: `Preimage::StatusFor` (r:1 w:0)
+	/// Proof: `Preimage::StatusFor` (`max_values`: None, `max_size`: Some(91), added: 2566, mode: `MaxEncodedLen`)
+	/// Storage: `Preimage::RequestStatusFor` (r:1 w:1)
+	/// Proof: `Preimage::RequestStatusFor` (`max_values`: None, `max_size`: Some(91), added: 2566, mode: `MaxEncodedLen`)
 	/// The range of component `s` is `[128, 4194304]`.
 	fn service_task_fetched(s: u32, ) -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `251 + s * (1 ±0)`
-		//  Estimated: `3716 + s * (1 ±0)`
-		// Minimum execution time: 20_710_000 picoseconds.
-		Weight::from_parts(20_918_000, 0)
-			.saturating_add(Weight::from_parts(0, 3716))
-			// Standard Error: 9
-			.saturating_add(Weight::from_parts(1_257, 0).saturating_mul(s.into()))
-			.saturating_add(T::DbWeight::get().reads(2))
+		//  Measured:  `246 + s * (1 ±0)`
+		//  Estimated: `3711 + s * (1 ±0)`
+		// Minimum execution time: 17_329_000 picoseconds.
+		Weight::from_parts(17_604_000, 0)
+			.saturating_add(Weight::from_parts(0, 3711))
+			// Standard Error: 1
+			.saturating_add(Weight::from_parts(1_256, 0).saturating_mul(s.into()))
+			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(2))
 			.saturating_add(Weight::from_parts(0, 1).saturating_mul(s.into()))
 	}
-	/// Storage: Scheduler Lookup (r:0 w:1)
-	/// Proof: Scheduler Lookup (max_values: None, max_size: Some(48), added: 2523, mode: MaxEncodedLen)
+	/// Storage: `Scheduler::Lookup` (r:0 w:1)
+	/// Proof: `Scheduler::Lookup` (`max_values`: None, `max_size`: Some(48), added: 2523, mode: `MaxEncodedLen`)
 	fn service_task_named() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `0`
 		//  Estimated: `0`
-		// Minimum execution time: 7_262_000 picoseconds.
-		Weight::from_parts(7_412_000, 0)
+		// Minimum execution time: 4_503_000 picoseconds.
+		Weight::from_parts(4_677_000, 0)
 			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
@@ -115,90 +117,169 @@ impl<T: frame_system::Config> pallet_scheduler::WeightInfo for WeightInfo<T> {
 		// Proof Size summary in bytes:
 		//  Measured:  `0`
 		//  Estimated: `0`
-		// Minimum execution time: 5_774_000 picoseconds.
-		Weight::from_parts(5_887_000, 0)
+		// Minimum execution time: 3_145_000 picoseconds.
+		Weight::from_parts(3_252_000, 0)
 			.saturating_add(Weight::from_parts(0, 0))
 	}
 	fn execute_dispatch_signed() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `0`
 		//  Estimated: `0`
-		// Minimum execution time: 2_777_000 picoseconds.
-		Weight::from_parts(2_865_000, 0)
+		// Minimum execution time: 1_804_000 picoseconds.
+		Weight::from_parts(1_891_000, 0)
 			.saturating_add(Weight::from_parts(0, 0))
 	}
 	fn execute_dispatch_unsigned() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `0`
 		//  Estimated: `0`
-		// Minimum execution time: 2_739_000 picoseconds.
-		Weight::from_parts(2_827_000, 0)
+		// Minimum execution time: 1_706_000 picoseconds.
+		Weight::from_parts(1_776_000, 0)
 			.saturating_add(Weight::from_parts(0, 0))
 	}
-	/// Storage: Scheduler Agenda (r:1 w:1)
-	/// Proof: Scheduler Agenda (max_values: None, max_size: Some(38963), added: 41438, mode: MaxEncodedLen)
-	/// The range of component `s` is `[0, 49]`.
+	/// Storage: `Scheduler::Agenda` (r:1 w:1)
+	/// Proof: `Scheduler::Agenda` (`max_values`: None, `max_size`: Some(155814), added: 158289, mode: `MaxEncodedLen`)
+	/// The range of component `s` is `[0, 199]`.
 	fn schedule(s: u32, ) -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `116 + s * (177 ±0)`
-		//  Estimated: `42428`
-		// Minimum execution time: 14_788_000 picoseconds.
-		Weight::from_parts(17_705_748, 0)
-			.saturating_add(Weight::from_parts(0, 42428))
-			// Standard Error: 1_703
-			.saturating_add(Weight::from_parts(760_991, 0).saturating_mul(s.into()))
+		//  Measured:  `77 + s * (177 ±0)`
+		//  Estimated: `159279`
+		// Minimum execution time: 8_629_000 picoseconds.
+		Weight::from_parts(6_707_232, 0)
+			.saturating_add(Weight::from_parts(0, 159279))
+			// Standard Error: 5_580
+			.saturating_add(Weight::from_parts(471_827, 0).saturating_mul(s.into()))
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
-	/// Storage: Scheduler Agenda (r:1 w:1)
-	/// Proof: Scheduler Agenda (max_values: None, max_size: Some(38963), added: 41438, mode: MaxEncodedLen)
-	/// Storage: Scheduler Lookup (r:0 w:1)
-	/// Proof: Scheduler Lookup (max_values: None, max_size: Some(48), added: 2523, mode: MaxEncodedLen)
-	/// The range of component `s` is `[1, 50]`.
+	/// Storage: `Scheduler::Agenda` (r:1 w:1)
+	/// Proof: `Scheduler::Agenda` (`max_values`: None, `max_size`: Some(155814), added: 158289, mode: `MaxEncodedLen`)
+	/// Storage: `Scheduler::Lookup` (r:0 w:1)
+	/// Proof: `Scheduler::Lookup` (`max_values`: None, `max_size`: Some(48), added: 2523, mode: `MaxEncodedLen`)
+	/// The range of component `s` is `[1, 200]`.
 	fn cancel(s: u32, ) -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `116 + s * (177 ±0)`
-		//  Estimated: `42428`
-		// Minimum execution time: 18_716_000 picoseconds.
-		Weight::from_parts(18_220_022, 0)
-			.saturating_add(Weight::from_parts(0, 42428))
-			// Standard Error: 1_508
-			.saturating_add(Weight::from_parts(1_357_835, 0).saturating_mul(s.into()))
+		//  Measured:  `77 + s * (177 ±0)`
+		//  Estimated: `159279`
+		// Minimum execution time: 12_675_000 picoseconds.
+		Weight::from_parts(7_791_682, 0)
+			.saturating_add(Weight::from_parts(0, 159279))
+			// Standard Error: 5_381
+			.saturating_add(Weight::from_parts(653_023, 0).saturating_mul(s.into()))
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
-	/// Storage: Scheduler Lookup (r:1 w:1)
-	/// Proof: Scheduler Lookup (max_values: None, max_size: Some(48), added: 2523, mode: MaxEncodedLen)
-	/// Storage: Scheduler Agenda (r:1 w:1)
-	/// Proof: Scheduler Agenda (max_values: None, max_size: Some(38963), added: 41438, mode: MaxEncodedLen)
-	/// The range of component `s` is `[0, 49]`.
+	/// Storage: `Scheduler::Lookup` (r:1 w:1)
+	/// Proof: `Scheduler::Lookup` (`max_values`: None, `max_size`: Some(48), added: 2523, mode: `MaxEncodedLen`)
+	/// Storage: `Scheduler::Agenda` (r:1 w:1)
+	/// Proof: `Scheduler::Agenda` (`max_values`: None, `max_size`: Some(155814), added: 158289, mode: `MaxEncodedLen`)
+	/// The range of component `s` is `[0, 199]`.
 	fn schedule_named(s: u32, ) -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `293 + s * (185 ±0)`
-		//  Estimated: `42428`
-		// Minimum execution time: 17_719_000 picoseconds.
-		Weight::from_parts(21_657_806, 0)
-			.saturating_add(Weight::from_parts(0, 42428))
-			// Standard Error: 2_645
-			.saturating_add(Weight::from_parts(794_184, 0).saturating_mul(s.into()))
+		//  Measured:  `468 + s * (179 ±0)`
+		//  Estimated: `159279`
+		// Minimum execution time: 11_908_000 picoseconds.
+		Weight::from_parts(11_833_059, 0)
+			.saturating_add(Weight::from_parts(0, 159279))
+			// Standard Error: 5_662
+			.saturating_add(Weight::from_parts(482_816, 0).saturating_mul(s.into()))
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
-	/// Storage: Scheduler Lookup (r:1 w:1)
-	/// Proof: Scheduler Lookup (max_values: None, max_size: Some(48), added: 2523, mode: MaxEncodedLen)
-	/// Storage: Scheduler Agenda (r:1 w:1)
-	/// Proof: Scheduler Agenda (max_values: None, max_size: Some(38963), added: 41438, mode: MaxEncodedLen)
-	/// The range of component `s` is `[1, 50]`.
+	/// Storage: `Scheduler::Lookup` (r:1 w:1)
+	/// Proof: `Scheduler::Lookup` (`max_values`: None, `max_size`: Some(48), added: 2523, mode: `MaxEncodedLen`)
+	/// Storage: `Scheduler::Agenda` (r:1 w:1)
+	/// Proof: `Scheduler::Agenda` (`max_values`: None, `max_size`: Some(155814), added: 158289, mode: `MaxEncodedLen`)
+	/// The range of component `s` is `[1, 200]`.
 	fn cancel_named(s: u32, ) -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `319 + s * (185 ±0)`
-		//  Estimated: `42428`
-		// Minimum execution time: 20_225_000 picoseconds.
-		Weight::from_parts(20_494_405, 0)
-			.saturating_add(Weight::from_parts(0, 42428))
-			// Standard Error: 1_890
-			.saturating_add(Weight::from_parts(1_379_025, 0).saturating_mul(s.into()))
+		//  Measured:  `509 + s * (179 ±0)`
+		//  Estimated: `159279`
+		// Minimum execution time: 15_506_000 picoseconds.
+		Weight::from_parts(11_372_975, 0)
+			.saturating_add(Weight::from_parts(0, 159279))
+			// Standard Error: 5_765
+			.saturating_add(Weight::from_parts(656_322, 0).saturating_mul(s.into()))
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(2))
+	}
+	/// Storage: `Scheduler::Retries` (r:1 w:2)
+	/// Proof: `Scheduler::Retries` (`max_values`: None, `max_size`: Some(30), added: 2505, mode: `MaxEncodedLen`)
+	/// Storage: `Scheduler::Agenda` (r:1 w:1)
+	/// Proof: `Scheduler::Agenda` (`max_values`: None, `max_size`: Some(155814), added: 158289, mode: `MaxEncodedLen`)
+	/// Storage: `Scheduler::Lookup` (r:0 w:1)
+	/// Proof: `Scheduler::Lookup` (`max_values`: None, `max_size`: Some(48), added: 2523, mode: `MaxEncodedLen`)
+	/// The range of component `s` is `[1, 200]`.
+	fn schedule_retry(s: u32, ) -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `159`
+		//  Estimated: `159279`
+		// Minimum execution time: 14_069_000 picoseconds.
+		Weight::from_parts(14_868_345, 0)
+			.saturating_add(Weight::from_parts(0, 159279))
+			// Standard Error: 425
+			.saturating_add(Weight::from_parts(33_468, 0).saturating_mul(s.into()))
+			.saturating_add(T::DbWeight::get().reads(2))
+			.saturating_add(T::DbWeight::get().writes(4))
+	}
+	/// Storage: `Scheduler::Agenda` (r:1 w:0)
+	/// Proof: `Scheduler::Agenda` (`max_values`: None, `max_size`: Some(155814), added: 158289, mode: `MaxEncodedLen`)
+	/// Storage: `Scheduler::Retries` (r:0 w:1)
+	/// Proof: `Scheduler::Retries` (`max_values`: None, `max_size`: Some(30), added: 2505, mode: `MaxEncodedLen`)
+	fn set_retry() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `77 + s * (177 ±0)`
+		//  Estimated: `159279`
+		// Minimum execution time: 7_550_000 picoseconds.
+		Weight::from_parts(6_735_955, 0)
+			.saturating_add(Weight::from_parts(0, 159279))
+			.saturating_add(T::DbWeight::get().reads(1))
+			.saturating_add(T::DbWeight::get().writes(1))
+	}
+	/// Storage: `Scheduler::Lookup` (r:1 w:0)
+	/// Proof: `Scheduler::Lookup` (`max_values`: None, `max_size`: Some(48), added: 2523, mode: `MaxEncodedLen`)
+	/// Storage: `Scheduler::Agenda` (r:1 w:0)
+	/// Proof: `Scheduler::Agenda` (`max_values`: None, `max_size`: Some(155814), added: 158289, mode: `MaxEncodedLen`)
+	/// Storage: `Scheduler::Retries` (r:0 w:1)
+	/// Proof: `Scheduler::Retries` (`max_values`: None, `max_size`: Some(30), added: 2505, mode: `MaxEncodedLen`)
+	fn set_retry_named() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `513 + s * (179 ±0)`
+		//  Estimated: `159279`
+		// Minimum execution time: 11_017_000 picoseconds.
+		Weight::from_parts(11_749_385, 0)
+			.saturating_add(Weight::from_parts(0, 159279))
+			.saturating_add(T::DbWeight::get().reads(2))
+			.saturating_add(T::DbWeight::get().writes(1))
+	}
+	/// Storage: `Scheduler::Agenda` (r:1 w:0)
+	/// Proof: `Scheduler::Agenda` (`max_values`: None, `max_size`: Some(155814), added: 158289, mode: `MaxEncodedLen`)
+	/// Storage: `Scheduler::Retries` (r:0 w:1)
+	/// Proof: `Scheduler::Retries` (`max_values`: None, `max_size`: Some(30), added: 2505, mode: `MaxEncodedLen`)
+	fn cancel_retry() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `77 + s * (177 ±0)`
+		//  Estimated: `159279`
+		// Minimum execution time: 7_550_000 picoseconds.
+		Weight::from_parts(6_735_955, 0)
+			.saturating_add(Weight::from_parts(0, 159279))
+			.saturating_add(T::DbWeight::get().reads(1))
+			.saturating_add(T::DbWeight::get().writes(1))
+	}
+	/// Storage: `Scheduler::Lookup` (r:1 w:0)
+	/// Proof: `Scheduler::Lookup` (`max_values`: None, `max_size`: Some(48), added: 2523, mode: `MaxEncodedLen`)
+	/// Storage: `Scheduler::Agenda` (r:1 w:0)
+	/// Proof: `Scheduler::Agenda` (`max_values`: None, `max_size`: Some(155814), added: 158289, mode: `MaxEncodedLen`)
+	/// Storage: `Scheduler::Retries` (r:0 w:1)
+	/// Proof: `Scheduler::Retries` (`max_values`: None, `max_size`: Some(30), added: 2505, mode: `MaxEncodedLen`)
+	fn cancel_retry_named() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `513 + s * (179 ±0)`
+		//  Estimated: `159279`
+		// Minimum execution time: 11_017_000 picoseconds.
+		Weight::from_parts(11_749_385, 0)
+			.saturating_add(Weight::from_parts(0, 159279))
+			.saturating_add(T::DbWeight::get().reads(2))
+			.saturating_add(T::DbWeight::get().writes(1))
 	}
 }

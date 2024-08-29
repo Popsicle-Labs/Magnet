@@ -43,6 +43,7 @@ fn bulk_inherent_test() {
 			duration: 100,
 			start_relaychain_height: 130,
 			end_relaychain_height: 230,
+			record_index: 0,
 		};
 		inherent_data
 			.put_data(mp_coretime_bulk::INHERENT_IDENTIFIER, &bulk_inherent_data)

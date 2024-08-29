@@ -37,7 +37,6 @@ use primitives::Balance;
 use sp_runtime::sp_std::{prelude::*, vec};
 pub mod weights;
 use cumulus_pallet_parachain_system::RelaychainStateProvider;
-use sp_runtime::Perbill;
 use weights::WeightInfo;
 
 #[cfg(test)]
@@ -110,7 +109,7 @@ pub mod pallet {
 	/// Gas threshold that triggers order placement.
 	#[pallet::storage]
 	#[pallet::getter(fn gas_threshold)]
-	pub(super) type GasThreshold<T: Config> = StorageValue<_, Perbill, ValueQuery>;
+	pub(super) type GasThreshold<T: Config> = StorageValue<_, u128, ValueQuery>;
 
 	/// Order Information Map.
 	#[pallet::storage]
@@ -132,7 +131,7 @@ pub mod pallet {
 	{
 		pub slot_width: u32,
 		pub price_limit: BalanceOf<T>,
-		pub gas_threshold: Perbill,
+		pub gas_threshold: u128,
 	}
 
 	#[pallet::genesis_build]
@@ -307,7 +306,7 @@ pub mod pallet {
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::set_gas_threshold())]
 		pub fn set_gas_threshold(
 			origin: OriginFor<T>,
-			threshold: Perbill,
+			threshold: u128,
 		) -> DispatchResultWithPostInfo {
 			T::UpdateOrigin::ensure_origin(origin)?;
 
@@ -325,13 +324,18 @@ where
 	///
 	/// Parameters:
 	/// - `gas_balance`: The total gas.
-	pub fn reach_txpool_threshold(gas_balance: BalanceOf<T>, core_price: BalanceOf<T>) -> bool {
+	pub fn reach_txpool_threshold(gas_balance: BalanceOf<T>, core_price: BalanceOf<T>) -> bool
+	where
+		BalanceOf<T>: Into<u128>,
+	{
 		let txpool_threshold = GasThreshold::<T>::get();
-		gas_balance > txpool_threshold * core_price
+		let left = gas_balance.into();
+		let right = txpool_threshold * core_price.into() / 100;
+		left > right
 	}
 
 	fn check_slot_author(relaychian_number: u32, author: T::AccountId) -> bool {
-		let authorities = pallet_aura::Pallet::<T>::authorities();
+		let authorities = pallet_aura::Authorities::<T>::get();
 		let slot_width = Self::slot_width();
 		let auth_len = authorities.len() as u32;
 		// The larger the slot width, the longer the rotation time.

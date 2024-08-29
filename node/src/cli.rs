@@ -2,6 +2,7 @@ use crate::service::EthConfiguration;
 use std::path::PathBuf;
 
 /// Sub-commands supported by the collator.
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, clap::Subcommand)]
 pub enum Subcommand {
 	/// Build a chain specification.
@@ -38,11 +39,6 @@ pub enum Subcommand {
 	/// The pallet benchmarking moved to the `pallet` sub-command.
 	#[command(subcommand)]
 	Benchmark(frame_benchmarking_cli::BenchmarkCmd),
-
-	/// Try-runtime has migrated to a standalone
-	/// [CLI](<https://github.com/paritytech/try-runtime-cli>). The subcommand exists as a stub and
-	/// deprecation notice. It will be removed entirely some time after Janurary 2024.
-	TryRuntime,
 }
 
 const AFTER_HELP_EXAMPLE: &str = color_print::cstr!(
@@ -63,8 +59,7 @@ const AFTER_HELP_EXAMPLE: &str = color_print::cstr!(
 	args_conflicts_with_subcommands = true,
 	subcommand_negates_reqs = true
 )]
-//#[clap(after_help = AFTER_HELP_EXAMPLE)]
-#[command(after_help = AFTER_HELP_EXAMPLE)]
+#[clap(after_help = AFTER_HELP_EXAMPLE)]
 pub struct Cli {
 	#[command(subcommand)]
 	pub subcommand: Option<Subcommand>,

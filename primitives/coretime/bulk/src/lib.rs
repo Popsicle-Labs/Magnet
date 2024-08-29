@@ -26,7 +26,9 @@ use sp_runtime::sp_std::vec::Vec;
 pub mod inherent_client;
 pub mod well_known_keys;
 use codec::{Decode, Encode};
-use pallet_broker::RegionId;
+use pallet_broker::{RegionId, Timeslice};
+use sp_core::MaxEncodedLen;
+use sp_runtime::RuntimeDebug;
 use {scale_info::TypeInfo, sp_inherents::InherentIdentifier};
 
 /// Inherent data of bulk mode.
@@ -44,6 +46,8 @@ pub struct BulkInherentData {
 	pub start_relaychain_height: u32,
 	/// Relaychain block number of end schedule coretime core.
 	pub end_relaychain_height: u32,
+	/// Expected record index for bulk pallet.
+	pub record_index: u32,
 }
 
 /// Status of bulk purchased then assigned.
@@ -73,6 +77,8 @@ pub struct BulkMemRecordItem {
 	pub duration: u32,
 	/// Status of bulk record.
 	pub status: BulkStatus,
+	/// Expected record index for bulk pallet.
+	pub record_index: u32,
 }
 
 #[derive(Clone, Debug)]
@@ -94,5 +100,27 @@ sp_api::decl_runtime_apis! {
 		fn rpc_url() -> Vec<u8>;
 		// Block number of relaychain.
 		fn relaychain_block_number()->u32;
+		// Record index.
+		fn record_index()-> u32;
 	}
+}
+
+#[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+pub struct RegionRecord<AccountId, Balance> {
+	/// The end of the Region.
+	pub end: Timeslice,
+	/// The owner of the Region.
+	pub owner: Option<AccountId>,
+	/// The amount paid to Polkadot for this Region, or `None` if renewal is not allowed.
+	pub paid: Option<Balance>,
+}
+
+#[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+pub struct RegionRecordV0<AccountId, Balance> {
+	/// The end of the Region.
+	pub end: Timeslice,
+	/// The owner of the Region.
+	pub owner: AccountId,
+	/// The amount paid to Polkadot for this Region, or `None` if renewal is not allowed.
+	pub paid: Option<Balance>,
 }
