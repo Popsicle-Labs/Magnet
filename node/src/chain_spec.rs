@@ -4,7 +4,7 @@ use runtime::{AccountId, AuraId, Signature, EXISTENTIAL_DEPOSIT};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
-use sp_core::{crypto::Ss58Codec, sr25519, Pair, Public, H160, H256, U256};
+use sp_core::{crypto::Ss58Codec, sr25519, ByteArray, Pair, Public, H160, H256, U256};
 use sp_runtime::traits::{IdentifyAccount, Verify};
 use sp_runtime::AccountId32;
 use std::{collections::BTreeMap, str::FromStr};
@@ -234,8 +234,8 @@ fn testnet_genesis(
 		},
 		"assets": {
 			"assets": vec![
-				(1, alice, true, 1_000_000_0000_0000_0000u128),
-				(2, bob, true, 2_000_000_0000_0000_0000u128),
+				(1, alice.clone(), true, 1_000_000_0000_0000_0000u128),
+				(2, bob.clone(), true, 2_000_000_0000_0000_0000u128),
 			],
 			// Genesis metadata: Vec<(id, name, symbol, decimals)>
 			"metadata": vec![
