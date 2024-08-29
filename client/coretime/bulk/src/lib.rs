@@ -78,7 +78,13 @@ where
 
 	let rpc_url = std::str::from_utf8(&url)?;
 
-	let api = OnlineClient::<PolkadotConfig>::from_url(rpc_url).await?;
+	let api_client = OnlineClient::<PolkadotConfig>::from_url(rpc_url).await;
+
+	let api = if let Ok(ok_api) = api_client {
+		ok_api
+	} else {
+		return Ok(());
+	};
 
 	let mut blocks_sub = api.blocks().subscribe_finalized().await?;
 
@@ -259,7 +265,9 @@ pub async fn run_coretime_bulk_task<P, R, Block>(
 			let result =
 				coretime_bulk_task(&*parachain, relay_chain.clone(), para_id, bulk_record.clone())
 					.await;
-			log::info!("==============run_coretime_bulk_task result:{:?}", result);
+			if let Err(err) = result {
+				log::info!("==============run_coretime_bulk_task error:{:?}", err);
+			}
 		}
 	};
 	select! {
