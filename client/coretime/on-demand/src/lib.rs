@@ -443,11 +443,13 @@ async fn relay_chain_notification<P, R, Block, ExPool, Balance>(
 	let rpc_client = RpcClient::from_url(url.clone()).await.expect("rpc connect failed");
 	let rpc = LegacyRpcMethods::<PolkadotConfig>::new(rpc_client.clone());
 	let properties = rpc.system_properties().await.expect("can't get relaychain properties");
-	let relay_decimal = properties
-		.get("tokenDecimals")
-		.and_then(|v| v.as_u64())
-		.expect("can't get relaychain token decimal");
-
+	// If tokenSymbol is not set in the relaychain's chainspec file, the default value is 12.
+	let relay_decimal =
+		if let Some(decimal) = properties.get("tokenDecimals").and_then(|v| v.as_u64()) {
+			decimal
+		} else {
+			12
+		};
 	let new_best_heads = match new_best_heads(relay_chain.clone(), para_id).await {
 		Ok(best_heads_stream) => best_heads_stream.fuse(),
 		Err(_err) => {

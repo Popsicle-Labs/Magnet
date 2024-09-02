@@ -226,7 +226,7 @@ async fn start_node_impl(
 	let client = params.client.clone();
 	let backend = params.backend.clone();
 	let mut task_manager = params.task_manager;
-	// If tokenSymbol is not set in the relaychain's chainspec file, the default value is 12.
+	// If tokenSymbol is not set in the para chain's chainspec file, the default value is 18.
 	let parachain_decimal = if let Some(decimal) = parachain_config
 		.chain_spec
 		.properties()
@@ -235,8 +235,9 @@ async fn start_node_impl(
 	{
 		decimal
 	} else {
-		12
+		18
 	};
+
 	let relay_rpc =
 		if let RelayChainMode::ExternalRpc(urls) = collator_options.clone().relay_chain_mode {
 			urls[0].as_str().to_string()
