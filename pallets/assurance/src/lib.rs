@@ -107,9 +107,14 @@ pub mod pallet {
 		}
 
 		pub fn on_relaychain(blocknumber: u32) -> bool {
+			let bid_threshold = BidThreshold::<T>::get();
+			// If BidThreshold is set to 0, the assurance function is disabled.
+			if bid_threshold == 0 {
+				return false;
+			}
 			let last_relay_block_number =
 				RelaychainDataProvider::<T>::current_relay_chain_state().number;
-			if blocknumber > BidThreshold::<T>::get() + u32::from(last_relay_block_number) {
+			if blocknumber > bid_threshold + u32::from(last_relay_block_number) {
 				return true;
 			}
 
