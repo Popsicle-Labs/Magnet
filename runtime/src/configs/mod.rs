@@ -12,8 +12,8 @@ use frame_support::{
 	parameter_types,
 	traits::{
 		fungible::HoldConsideration, AsEnsureOriginWithArg, ConstBool, ConstU32, ConstU64, ConstU8,
-		EitherOf, EitherOfDiverse, FindAuthor, InstanceFilter, LinearStoragePrice, PrivilegeCmp,
-		TransformOrigin, VariantCountOf,
+		EitherOf, EitherOfDiverse, FindAuthor, Imbalance, InstanceFilter, LinearStoragePrice,
+		OnUnbalanced, PrivilegeCmp, TransformOrigin, VariantCountOf,
 	},
 	weights::{ConstantMultiplier, Weight},
 	PalletId,
@@ -31,14 +31,17 @@ use polkadot_runtime_common::{
 	xcm_sender::NoPriceForMessageDelivery, BlockHashCount, SlowAdjustingFeeUpdate,
 };
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
-use sp_core::{crypto::ByteArray, ConstU128, H160, U256};
+use sp_core::{
+	crypto::{AccountId32, ByteArray},
+	ConstU128, H160, U256,
+};
 use sp_runtime::{
 	traits::{BlakeTwo256, Block as BlockT, DispatchInfoOf, Dispatchable, PostDispatchInfoOf},
 	transaction_validity::{TransactionValidity, TransactionValidityError},
 	ConsensusEngineId, Perbill, Permill, RuntimeDebug, SaturatedConversion,
 };
 use sp_version::RuntimeVersion;
-use xcm::latest::prelude::BodyId;
+use xcm::{latest::prelude::BodyId, v2::WildMultiAsset::AllOf};
 // Local module imports
 use super::{
 	weights::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight},
@@ -50,12 +53,14 @@ use super::{
 	NORMAL_DISPATCH_RATIO, SLOT_DURATION, VERSION,
 };
 use crate::{
-	generic, governance::origins::AuctionAdmin, weights, BaseFee, EVMChainId, SignedExtra, DAYS,
-	MILLIUNIT, UNIT,
+	generic, governance::origins::AuctionAdmin, governance::MagnetToStakingPot, weights, BaseFee,
+	EVMChainId, SignedExtra, DAYS, MILLIUNIT, UNIT,
 };
+pub use pallet_balances::NegativeImbalance;
 pub use pallet_bulk;
 use pallet_liquidation::{BulkGasCost, OrderGasCost};
 use pallet_pot::PotNameBtreemap;
+use parachains_common::impls::AccountIdOf;
 use scale_info::prelude::string::String;
 use sp_std::collections::btree_map::BTreeMap;
 use sp_std::{cmp::Ordering, marker::PhantomData, prelude::*};
@@ -247,15 +252,33 @@ impl pallet_balances::Config for Runtime {
 	type FreezeIdentifier = RuntimeFreezeReason;
 	type MaxFreezes = VariantCountOf<RuntimeFreezeReason>;
 }
-
+pub struct MagnetDealWithFees<R>(PhantomData<R>);
+impl<R> OnUnbalanced<NegativeImbalance<R>> for MagnetDealWithFees<R>
+where
+	R: pallet_balances::Config,
+	AccountIdOf<R>: From<polkadot_primitives::AccountId> + Into<polkadot_primitives::AccountId>,
+	<R as frame_system::Config>::RuntimeEvent: From<pallet_balances::Event<R>>,
+	R::AccountId: From<AccountId32>,
+{
+	fn on_unbalanceds<B>(mut fees_then_tips: impl Iterator<Item = NegativeImbalance<R>>) {
+		if let Some(mut fees) = fees_then_tips.next() {
+			if let Some(tips) = fees_then_tips.next() {
+				tips.merge_into(&mut fees);
+			}
+			<MagnetToStakingPot<R> as OnUnbalanced<_>>::on_unbalanced(fees);
+		}
+	}
+}
 parameter_types! {
 	/// Relay Chain `TransactionByteFee` / 10
 	pub const TransactionByteFee: Balance = 10 * MICROUNIT;
 }
-
+pub use pallet_transaction_payment::{CurrencyAdapter, Multiplier, TargetedFeeAdjustment};
 impl pallet_transaction_payment::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type OnChargeTransaction = pallet_transaction_payment::FungibleAdapter<Balances, ()>;
+	// type OnChargeTransaction = pallet_transaction_payment::FungibleAdapter<Balances, ()>;
+	type OnChargeTransaction =
+		pallet_transaction_payment::CurrencyAdapter<Balances, MagnetDealWithFees<Runtime>>;
 	type WeightToFee = WeightToFee;
 	type LengthToFee = ConstantMultiplier<Balance, TransactionByteFee>;
 	type FeeMultiplierUpdate = SlowAdjustingFeeUpdate<Self>;

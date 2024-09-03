@@ -314,7 +314,6 @@ async fn start_node_impl(
 		fc_mapping_sync::EthereumBlockNotification<Block>,
 	> = Default::default();
 	let pubsub_notification_sinks = Arc::new(pubsub_notification_sinks);
-	let pubsub_notification_sinks_frontier = pubsub_notification_sinks.clone();
 
 	let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
 	let target_gas_price = eth_config.target_gas_price;
@@ -331,7 +330,6 @@ async fn start_node_impl(
 		Ok((slot, timestamp, dynamic_fee))
 	};
 	let frontier_backend = Arc::new(frontier_backend);
-	let frontier_backend = frontier_backend.clone();
 	let is_authority = parachain_config.role.is_authority();
 
 	let rpc_builder = {
@@ -341,6 +339,7 @@ async fn start_node_impl(
 		let transaction_pool = transaction_pool.clone();
 		let filter_pool = filter_pool.clone();
 		let frontier_backend = frontier_backend.clone();
+		let pubsub_notification_sinks = pubsub_notification_sinks.clone();
 		let storage_override = storage_override.clone();
 		let fee_history_cache = fee_history_cache.clone();
 		let block_data_cache = Arc::new(fc_rpc::EthBlockDataCacheTask::new(
@@ -416,7 +415,7 @@ async fn start_node_impl(
 		fee_history_cache,
 		fee_history_cache_limit,
 		sync_service.clone(),
-		pubsub_notification_sinks_frontier,
+		pubsub_notification_sinks,
 	)
 	.await;
 
