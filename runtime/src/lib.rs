@@ -13,6 +13,7 @@ pub mod xcms;
 
 use codec::{Decode, Encode, MaxEncodedLen};
 use core::ops::Div;
+use pallet_evm::AddressMapping;
 
 use cumulus_pallet_parachain_system::RelayNumberMonotonicallyIncreases;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
@@ -340,7 +341,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 /// up by `pallet_aura` to implement `fn slot_duration()`.
 ///
 /// Change this to adjust the block time.
-pub const MILLISECS_PER_BLOCK: u64 = 6000;
+pub const MILLISECS_PER_BLOCK: u64 = 12000;
 pub const WEIGHT_MILLISECS_PER_BLOCK: u64 = 2000;
 
 // NOTE: Currently it is not possible to change the slot duration after the chain has started.
@@ -362,7 +363,7 @@ pub const GRAND: Balance = QUID * 1_000;
 pub const MILLICENTS: Balance = CENTS / 1_000;
 
 /// The existential deposit. Set to 1/10 of the Connected Relay Chain.
-pub const EXISTENTIAL_DEPOSIT: Balance = MILLIUNIT;
+pub const EXISTENTIAL_DEPOSIT: Balance = 1;
 
 /// We assume that ~5% of the block weight is consumed by `on_initialize` handlers. This is
 /// used to limit the maximal weight of a single extrinsic.
@@ -1416,7 +1417,17 @@ impl_runtime_apis! {
 		}
 
 		fn account_basic(address: H160) -> EVMAccount {
-			let (account, _) = pallet_evm::Pallet::<Runtime>::account_basic(&address);
+			let account_id = <Runtime as pallet_evm::Config>::AddressMapping::into_account_id(address);
+			let nonce = frame_system::Pallet::<Runtime>::account_nonce(&account_id);
+			let balance_free =
+				<Runtime as pallet_evm::Config>::Currency::free_balance(account_id.clone());
+			let balance_reserved =
+							<Runtime as pallet_evm::Config>::Currency::reserved_balance(account_id);
+			let balance = balance_free.saturating_add(balance_reserved);
+			let account = EVMAccount {
+					nonce: U256::from(UniqueSaturatedInto::<u128>::unique_saturated_into(nonce)),
+					balance: U256::from(UniqueSaturatedInto::<u128>::unique_saturated_into(balance)),
+			};
 			account
 		}
 
