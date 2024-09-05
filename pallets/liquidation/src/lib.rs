@@ -288,7 +288,10 @@ pub mod pallet {
 
 			let (collator, real_gas_cost) = match T::OrderGasCost::gas_cost(n) {
 				Ok(cost) => match cost {
-					Some((collator, real_gas_cost)) => (collator, real_gas_cost),
+					Some((collator, real_gas_cost)) => {
+						let adjusted_gas_cost = real_gas_cost * PARACHAIN_TO_RELAYCHAIN_UNIT;
+						(collator, adjusted_gas_cost)
+					},
 					None => return,
 				},
 				Err(_) => {
