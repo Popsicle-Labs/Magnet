@@ -46,6 +46,8 @@ pub mod pallet {
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
 		NewBidThreshold(u32),
+		EnableAssurance,
+		DisableAssurance,
 	}
 
 	#[pallet::error]
@@ -54,19 +56,24 @@ pub mod pallet {
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config> {
 		pub bid_threshold: u32,
+		pub enable: bool,
 		#[serde(skip)]
 		pub _marker: PhantomData<T>,
 	}
 
 	impl<T: Config> GenesisConfig<T> {
-		pub fn new(bid_threshold: u32) -> Self {
-			Self { bid_threshold, _marker: PhantomData }
+		pub fn new(bid_threshold: u32, enable: bool) -> Self {
+			Self { bid_threshold, enable, _marker: PhantomData }
 		}
 	}
 
 	impl<T: Config> Default for GenesisConfig<T> {
 		fn default() -> Self {
-			Self { bid_threshold: T::DefaultBidThreshold::get(), _marker: PhantomData }
+			Self {
+				bid_threshold: T::DefaultBidThreshold::get(),
+				enable: Enable::<T>::get(),
+				_marker: PhantomData,
+			}
 		}
 	}
 
@@ -74,6 +81,7 @@ pub mod pallet {
 	impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
 		fn build(&self) {
 			<BidThreshold<T>>::put(self.bid_threshold);
+			<Enable<T>>::put(self.enable);
 		}
 	}
 
@@ -84,6 +92,14 @@ pub mod pallet {
 
 	#[pallet::storage]
 	pub type BidThreshold<T> = StorageValue<_, u32, ValueQuery, DefaultBidThreshold<T>>;
+
+	#[pallet::type_value]
+	pub fn DefaultEnable<T: Config>() -> bool {
+		true
+	}
+
+	#[pallet::storage]
+	pub type Enable<T> = StorageValue<_, bool, ValueQuery, DefaultEnable<T>>;
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {}
@@ -98,6 +114,19 @@ pub mod pallet {
 			Self::deposit_event(Event::NewBidThreshold(blocknumber));
 			Ok(())
 		}
+
+		#[pallet::call_index(1)]
+		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
+		pub fn set_enable_assurance(origin: OriginFor<T>, enable: bool) -> DispatchResult {
+			ensure_root(origin)?;
+			<Enable<T>>::put(enable);
+			if enable {
+				Self::deposit_event(Event::EnableAssurance);
+			} else {
+				Self::deposit_event(Event::DisableAssurance);
+			}
+			Ok(())
+		}
 	}
 
 	impl<T: Config> Pallet<T> {
@@ -107,8 +136,13 @@ pub mod pallet {
 		}
 
 		pub fn on_relaychain(blocknumber: u32) -> bool {
+			let enable = Enable::<T>::get();
+			if !enable {
+				return false;
+			}
 			let last_relay_block_number =
 				RelaychainDataProvider::<T>::current_relay_chain_state().number;
+
 			if blocknumber > BidThreshold::<T>::get() + u32::from(last_relay_block_number) {
 				return true;
 			}
