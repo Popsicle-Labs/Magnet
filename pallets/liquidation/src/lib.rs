@@ -673,7 +673,8 @@ pub mod pallet {
 			let total_existing_operation_ratio: u32 =
 				OperationRatios::<T>::iter().map(|(_, r)| r).sum();
 			let total_ratio = system_ratio
-				+ treasury_ratio + collator_ratio
+				+ treasury_ratio
+				+ collator_ratio
 				+ total_existing_operation_ratio
 				+ ratio;
 			log::info!("3 -+-+-+-+-+ set operation ratio, total ratio:{:?}, system_ratio:{:?}, treasury_ratio:{:?}, collator_ratio:{:?}, operation account:{:?}, op_ratio:{:?}",
