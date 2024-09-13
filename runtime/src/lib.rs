@@ -1418,6 +1418,7 @@ impl_runtime_apis! {
 
 		fn account_basic(address: H160) -> EVMAccount {
 			let account_id = <Runtime as pallet_evm::Config>::AddressMapping::into_account_id(address);
+
 			let nonce = frame_system::Pallet::<Runtime>::account_nonce(&account_id);
 			let balance_free =
 				<Runtime as pallet_evm::Config>::Currency::free_balance(account_id.clone());
