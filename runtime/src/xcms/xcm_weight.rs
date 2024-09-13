@@ -285,7 +285,8 @@ impl<
 		AccountId,
 		Currency: CurrencyT<AccountId>,
 		OnUnbalanced: OnUnbalancedT<Currency::NegativeImbalance>,
-	> WeightTrader for UsingComponentsEx<WeightToFee, AssetIdValue, AccountId, Currency, OnUnbalanced>
+	> WeightTrader
+	for UsingComponentsEx<WeightToFee, AssetIdValue, AccountId, Currency, OnUnbalanced>
 {
 	fn new() -> Self {
 		Self(Weight::zero(), Zero::zero(), PhantomData)
