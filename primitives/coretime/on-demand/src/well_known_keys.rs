@@ -35,14 +35,6 @@ pub const SYSTEM_EVENTS: &[u8] =
 pub const ON_DEMAND_QUEUE: &[u8] =
 	&hex_literal::hex!["8f32430b49607f8d60bfd3a003ddf4b53f35b69d817556cf6b886e5b4f01fbdc"];
 
-//OnDemandAssignmentProvider SpotTraffic
-pub const SPOT_TRAFFIC: &[u8] =
-	&hex_literal::hex!["8f32430b49607f8d60bfd3a003ddf4b5c9308a8e0e640735727536bd9069b11e"];
-
-//Configuration ActiveConfig
-pub const ACTIVE_CONFIG: &[u8] =
-	&hex_literal::hex!["06de3d8a54d27e44a9d5ce189618f22db4b49d95320d9021994c850f25b8e385"];
-
 pub const CORE_DESCRIPTORS: &[u8] =
 	&hex_literal::hex!["638595eebaa445ce03a13547bece90e704e6ac775a3245623103ffec2cb2c92f"];
 

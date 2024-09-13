@@ -26,7 +26,9 @@ use sp_runtime::sp_std::vec::Vec;
 pub mod inherent_client;
 pub mod well_known_keys;
 use codec::{Decode, Encode};
-use pallet_broker::RegionId;
+use pallet_broker::{RegionId, Timeslice};
+use sp_core::MaxEncodedLen;
+use sp_runtime::RuntimeDebug;
 use {scale_info::TypeInfo, sp_inherents::InherentIdentifier};
 
 /// Inherent data of bulk mode.
@@ -95,4 +97,24 @@ sp_api::decl_runtime_apis! {
 		// Block number of relaychain.
 		fn relaychain_block_number()->u32;
 	}
+}
+
+#[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+pub struct RegionRecord<AccountId, Balance> {
+	/// The end of the Region.
+	pub end: Timeslice,
+	/// The owner of the Region.
+	pub owner: Option<AccountId>,
+	/// The amount paid to Polkadot for this Region, or `None` if renewal is not allowed.
+	pub paid: Option<Balance>,
+}
+
+#[derive(Encode, Decode, Clone, PartialEq, Eq, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+pub struct RegionRecordV0<AccountId, Balance> {
+	/// The end of the Region.
+	pub end: Timeslice,
+	/// The owner of the Region.
+	pub owner: AccountId,
+	/// The amount paid to Polkadot for this Region, or `None` if renewal is not allowed.
+	pub paid: Option<Balance>,
 }

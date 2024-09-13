@@ -54,3 +54,23 @@ pub fn chain_block_hash(block_number: u32) -> Vec<u8> {
 			.collect()
 	})
 }
+
+// configuration pallet version
+pub const CONFIGURATION_VERSION: &[u8] =
+	&hex_literal::hex!["06de3d8a54d27e44a9d5ce189618f22d4e7b9012096b41c4eb3aaf947f6ea429"];
+
+//Configuration ActiveConfig
+pub const ACTIVE_CONFIG: &[u8] =
+	&hex_literal::hex!["06de3d8a54d27e44a9d5ce189618f22db4b49d95320d9021994c850f25b8e385"];
+
+// on demand pallet version
+pub const ON_DEMAND_VERSION: &[u8] =
+	&hex_literal::hex!["8f32430b49607f8d60bfd3a003ddf4b54e7b9012096b41c4eb3aaf947f6ea429"];
+
+//OnDemandAssignmentProvider SpotTraffic
+pub const SPOT_TRAFFIC: &[u8] =
+	&hex_literal::hex!["8f32430b49607f8d60bfd3a003ddf4b5c9308a8e0e640735727536bd9069b11e"];
+
+//OnDemandAssignmentProvider QueueStatusType
+pub const QUEUE_STATUS_TYPE: &[u8] =
+	&hex_literal::hex!["8f32430b49607f8d60bfd3a003ddf4b58bf29330833ea7904c7209f4ce9d917a"];

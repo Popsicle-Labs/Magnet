@@ -16,6 +16,7 @@ tracing = { workspace = true }
 schnellru = { workspace = true }
 log = { workspace = true }
 subxt = { workspace = true, features = ["substrate-compat"]}
+scale-info = { workspace = true, features = ["derive", "serde"] }
 
 mp-coretime-common = { path = "../../../primitives/coretime/common"}
 
@@ -42,6 +43,7 @@ substrate-prometheus-endpoint = {  workspace = true }
 sc-service = { workspace = true }
 pallet-broker = { workspace = true}
 sp-storage = {  workspace = true }
+frame-support = {  workspace = true }
 
 # Cumulus
 cumulus-client-consensus-common = {  workspace = true }

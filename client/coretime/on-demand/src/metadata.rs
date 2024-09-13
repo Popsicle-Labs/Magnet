@@ -20,17 +20,17 @@
 //!
 
 #[derive(
-	:: subxt :: ext :: codec :: Decode,
-	:: subxt :: ext :: codec :: Encode,
-	:: subxt :: ext :: scale_decode :: DecodeAsType,
-	:: subxt :: ext :: scale_encode :: EncodeAsType,
+	:: subxt :: ext :: subxt_core :: ext :: codec :: Decode,
+	:: subxt :: ext :: subxt_core :: ext :: codec :: Encode,
+	:: subxt :: ext :: subxt_core :: ext :: scale_decode :: DecodeAsType,
+	:: subxt :: ext :: subxt_core :: ext :: scale_encode :: EncodeAsType,
 	Debug,
 	Eq,
 	PartialEq,
 )]
-# [codec (crate = :: subxt :: ext :: codec)]
-#[decode_as_type(crate_path = ":: subxt :: ext :: scale_decode")]
-#[encode_as_type(crate_path = ":: subxt :: ext :: scale_encode")]
+# [codec (crate = :: subxt :: ext :: subxt_core :: ext :: codec)]
+#[decode_as_type(crate_path = ":: subxt :: ext :: subxt_core :: ext :: scale_decode")]
+#[encode_as_type(crate_path = ":: subxt :: ext :: subxt_core :: ext :: scale_encode")]
 pub enum CoreAssignment {
 	#[codec(index = 0)]
 	Idle,
@@ -41,56 +41,56 @@ pub enum CoreAssignment {
 }
 
 #[derive(
-	:: subxt :: ext :: codec :: Decode,
-	:: subxt :: ext :: codec :: Encode,
-	:: subxt :: ext :: scale_decode :: DecodeAsType,
-	:: subxt :: ext :: scale_encode :: EncodeAsType,
+	:: subxt :: ext :: subxt_core :: ext :: codec :: Decode,
+	:: subxt :: ext :: subxt_core :: ext :: codec :: Encode,
+	:: subxt :: ext :: subxt_core :: ext :: scale_decode :: DecodeAsType,
+	:: subxt :: ext :: subxt_core :: ext :: scale_encode :: EncodeAsType,
 	Debug,
 )]
-# [codec (crate = :: subxt :: ext :: codec)]
-#[decode_as_type(crate_path = ":: subxt :: ext :: scale_decode")]
-#[encode_as_type(crate_path = ":: subxt :: ext :: scale_encode")]
+# [codec (crate = :: subxt :: ext :: subxt_core :: ext :: codec)]
+#[decode_as_type(crate_path = ":: subxt :: ext :: subxt_core :: ext :: scale_decode")]
+#[encode_as_type(crate_path = ":: subxt :: ext :: subxt_core :: ext :: scale_encode")]
 pub struct QueueDescriptor<_0> {
 	pub first: _0,
 	pub last: _0,
 }
 #[derive(
-	:: subxt :: ext :: codec :: CompactAs,
-	:: subxt :: ext :: codec :: Decode,
-	:: subxt :: ext :: codec :: Encode,
-	:: subxt :: ext :: scale_decode :: DecodeAsType,
-	:: subxt :: ext :: scale_encode :: EncodeAsType,
+	:: subxt :: ext :: subxt_core :: ext :: codec :: CompactAs,
+	:: subxt :: ext :: subxt_core :: ext :: codec :: Decode,
+	:: subxt :: ext :: subxt_core :: ext :: codec :: Encode,
+	:: subxt :: ext :: subxt_core :: ext :: scale_decode :: DecodeAsType,
+	:: subxt :: ext :: subxt_core :: ext :: scale_encode :: EncodeAsType,
 	Debug,
 )]
-# [codec (crate = :: subxt :: ext :: codec)]
-#[decode_as_type(crate_path = ":: subxt :: ext :: scale_decode")]
-#[encode_as_type(crate_path = ":: subxt :: ext :: scale_encode")]
+# [codec (crate = :: subxt :: ext :: subxt_core :: ext :: codec)]
+#[decode_as_type(crate_path = ":: subxt :: ext :: subxt_core :: ext :: scale_decode")]
+#[encode_as_type(crate_path = ":: subxt :: ext :: subxt_core :: ext :: scale_encode")]
 pub struct PartsOf57600(pub u16);
 #[derive(
-	:: subxt :: ext :: codec :: Decode,
-	:: subxt :: ext :: codec :: Encode,
-	:: subxt :: ext :: scale_decode :: DecodeAsType,
-	:: subxt :: ext :: scale_encode :: EncodeAsType,
+	:: subxt :: ext :: subxt_core :: ext :: codec :: Decode,
+	:: subxt :: ext :: subxt_core :: ext :: codec :: Encode,
+	:: subxt :: ext :: subxt_core :: ext :: scale_decode :: DecodeAsType,
+	:: subxt :: ext :: subxt_core :: ext :: scale_encode :: EncodeAsType,
 	Debug,
 )]
-# [codec (crate = :: subxt :: ext :: codec)]
-#[decode_as_type(crate_path = ":: subxt :: ext :: scale_decode")]
-#[encode_as_type(crate_path = ":: subxt :: ext :: scale_encode")]
+# [codec (crate = :: subxt :: ext :: subxt_core :: ext :: codec)]
+#[decode_as_type(crate_path = ":: subxt :: ext :: subxt_core :: ext :: scale_decode")]
+#[encode_as_type(crate_path = ":: subxt :: ext :: subxt_core :: ext :: scale_encode")]
 pub struct AssignmentState {
 	pub ratio: PartsOf57600,
 	pub remaining: PartsOf57600,
 }
 
 #[derive(
-	:: subxt :: ext :: codec :: Decode,
-	:: subxt :: ext :: codec :: Encode,
-	:: subxt :: ext :: scale_decode :: DecodeAsType,
-	:: subxt :: ext :: scale_encode :: EncodeAsType,
+	:: subxt :: ext :: subxt_core :: ext :: codec :: Decode,
+	:: subxt :: ext :: subxt_core :: ext :: codec :: Encode,
+	:: subxt :: ext :: subxt_core :: ext :: scale_decode :: DecodeAsType,
+	:: subxt :: ext :: subxt_core :: ext :: scale_encode :: EncodeAsType,
 	Debug,
 )]
-# [codec (crate = :: subxt :: ext :: codec)]
-#[decode_as_type(crate_path = ":: subxt :: ext :: scale_decode")]
-#[encode_as_type(crate_path = ":: subxt :: ext :: scale_encode")]
+# [codec (crate = :: subxt :: ext :: subxt_core :: ext :: codec)]
+#[decode_as_type(crate_path = ":: subxt :: ext :: subxt_core :: ext :: scale_decode")]
+#[encode_as_type(crate_path = ":: subxt :: ext :: subxt_core :: ext :: scale_encode")]
 pub struct WorkState<_0> {
 	pub assignments: Vec<(CoreAssignment, AssignmentState)>,
 	pub end_hint: Option<_0>,
@@ -98,49 +98,49 @@ pub struct WorkState<_0> {
 	pub step: PartsOf57600,
 }
 #[derive(
-	:: subxt :: ext :: codec :: Decode,
-	:: subxt :: ext :: codec :: Encode,
-	:: subxt :: ext :: scale_decode :: DecodeAsType,
-	:: subxt :: ext :: scale_encode :: EncodeAsType,
+	:: subxt :: ext :: subxt_core :: ext :: codec :: Decode,
+	:: subxt :: ext :: subxt_core :: ext :: codec :: Encode,
+	:: subxt :: ext :: subxt_core :: ext :: scale_decode :: DecodeAsType,
+	:: subxt :: ext :: subxt_core :: ext :: scale_encode :: EncodeAsType,
 	Debug,
 )]
-# [codec (crate = :: subxt :: ext :: codec)]
-#[decode_as_type(crate_path = ":: subxt :: ext :: scale_decode")]
-#[encode_as_type(crate_path = ":: subxt :: ext :: scale_encode")]
+# [codec (crate = :: subxt :: ext :: subxt_core :: ext :: codec)]
+#[decode_as_type(crate_path = ":: subxt :: ext :: subxt_core :: ext :: scale_decode")]
+#[encode_as_type(crate_path = ":: subxt :: ext :: subxt_core :: ext :: scale_encode")]
 pub struct CoreDescriptor<_0> {
 	pub queue: Option<QueueDescriptor<_0>>,
 	pub current_work: Option<WorkState<_0>>,
 }
 
 #[derive(
-	:: subxt :: ext :: codec :: CompactAs,
-	:: subxt :: ext :: codec :: Decode,
-	:: subxt :: ext :: codec :: Encode,
-	:: subxt :: ext :: scale_decode :: DecodeAsType,
-	:: subxt :: ext :: scale_encode :: EncodeAsType,
+	:: subxt :: ext :: subxt_core :: ext :: codec :: CompactAs,
+	:: subxt :: ext :: subxt_core :: ext :: codec :: Decode,
+	:: subxt :: ext :: subxt_core :: ext :: codec :: Encode,
+	:: subxt :: ext :: subxt_core :: ext :: scale_decode :: DecodeAsType,
+	:: subxt :: ext :: subxt_core :: ext :: scale_encode :: EncodeAsType,
 	Debug,
 )]
-# [codec (crate = :: subxt :: ext :: codec)]
-#[decode_as_type(crate_path = ":: subxt :: ext :: scale_decode")]
-#[encode_as_type(crate_path = ":: subxt :: ext :: scale_encode")]
+# [codec (crate = :: subxt :: ext :: subxt_core :: ext :: codec)]
+#[decode_as_type(crate_path = ":: subxt :: ext :: subxt_core :: ext :: scale_decode")]
+#[encode_as_type(crate_path = ":: subxt :: ext :: subxt_core :: ext :: scale_encode")]
 pub struct Id(pub u32);
 
 #[derive(
-	:: subxt :: ext :: codec :: Decode,
-	:: subxt :: ext :: codec :: Encode,
-	:: subxt :: ext :: scale_decode :: DecodeAsType,
-	:: subxt :: ext :: scale_encode :: EncodeAsType,
+	:: subxt :: ext :: subxt_core :: ext :: codec :: Decode,
+	:: subxt :: ext :: subxt_core :: ext :: codec :: Encode,
+	:: subxt :: ext :: subxt_core :: ext :: scale_decode :: DecodeAsType,
+	:: subxt :: ext :: subxt_core :: ext :: scale_encode :: EncodeAsType,
 	Debug,
 )]
-# [codec (crate = :: subxt :: ext :: codec)]
-#[decode_as_type(crate_path = ":: subxt :: ext :: scale_decode")]
-#[encode_as_type(crate_path = ":: subxt :: ext :: scale_encode")]
+# [codec (crate = :: subxt :: ext :: subxt_core :: ext :: codec)]
+#[decode_as_type(crate_path = ":: subxt :: ext :: subxt_core :: ext :: scale_decode")]
+#[encode_as_type(crate_path = ":: subxt :: ext :: subxt_core :: ext :: scale_encode")]
 pub struct PlaceOrderAllowDeath {
 	pub max_amount: u128,
 	pub para_id: Id,
 }
 
-impl ::subxt::blocks::StaticExtrinsic for PlaceOrderAllowDeath {
+impl ::subxt::ext::subxt_core::blocks::StaticExtrinsic for PlaceOrderAllowDeath {
 	const PALLET: &'static str = "OnDemandAssignmentProvider";
 	const CALL: &'static str = "place_order_allow_death";
 }
@@ -148,8 +148,8 @@ impl ::subxt::blocks::StaticExtrinsic for PlaceOrderAllowDeath {
 pub fn place_order_allow_death(
 	max_amount: u128,
 	para_id: Id,
-) -> ::subxt::tx::Payload<PlaceOrderAllowDeath> {
-	::subxt::tx::Payload::new_static(
+) -> ::subxt::ext::subxt_core::tx::payload::StaticPayload<PlaceOrderAllowDeath> {
+	::subxt::ext::subxt_core::tx::payload::StaticPayload::new_static(
 		"OnDemandAssignmentProvider",
 		"place_order_allow_death",
 		PlaceOrderAllowDeath { max_amount, para_id },
@@ -162,21 +162,21 @@ pub fn place_order_allow_death(
 }
 
 #[derive(
-	:: subxt :: ext :: codec :: Decode,
-	:: subxt :: ext :: codec :: Encode,
-	:: subxt :: ext :: scale_decode :: DecodeAsType,
-	:: subxt :: ext :: scale_encode :: EncodeAsType,
+	:: subxt :: ext :: subxt_core :: ext :: codec :: Decode,
+	:: subxt :: ext :: subxt_core :: ext :: codec :: Encode,
+	:: subxt :: ext :: subxt_core :: ext :: scale_decode :: DecodeAsType,
+	:: subxt :: ext :: subxt_core :: ext :: scale_encode :: EncodeAsType,
 	Debug,
 )]
-# [codec (crate = :: subxt :: ext :: codec)]
-#[decode_as_type(crate_path = ":: subxt :: ext :: scale_decode")]
-#[encode_as_type(crate_path = ":: subxt :: ext :: scale_encode")]
+# [codec (crate = :: subxt :: ext :: subxt_core :: ext :: codec)]
+#[decode_as_type(crate_path = ":: subxt :: ext :: subxt_core :: ext :: scale_decode")]
+#[encode_as_type(crate_path = ":: subxt :: ext :: subxt_core :: ext :: scale_encode")]
 pub struct PlaceOrderKeepAlive {
 	pub max_amount: u128,
 	pub para_id: Id,
 }
 
-impl ::subxt::blocks::StaticExtrinsic for PlaceOrderKeepAlive {
+impl ::subxt::ext::subxt_core::blocks::StaticExtrinsic for PlaceOrderKeepAlive {
 	const PALLET: &'static str = "OnDemandAssignmentProvider";
 	const CALL: &'static str = "place_order_keep_alive";
 }
@@ -185,8 +185,8 @@ impl ::subxt::blocks::StaticExtrinsic for PlaceOrderKeepAlive {
 pub fn place_order_keep_alive(
 	max_amount: u128,
 	para_id: Id,
-) -> ::subxt::tx::Payload<PlaceOrderKeepAlive> {
-	::subxt::tx::Payload::new_static(
+) -> ::subxt::ext::subxt_core::tx::payload::StaticPayload<PlaceOrderKeepAlive> {
+	::subxt::ext::subxt_core::tx::payload::StaticPayload::new_static(
 		"OnDemandAssignmentProvider",
 		"place_order_keep_alive",
 		PlaceOrderKeepAlive { max_amount, para_id },
@@ -199,21 +199,42 @@ pub fn place_order_keep_alive(
 }
 
 #[derive(
-	:: subxt :: ext :: codec :: Decode,
-	:: subxt :: ext :: codec :: Encode,
-	:: subxt :: ext :: scale_decode :: DecodeAsType,
-	:: subxt :: ext :: scale_encode :: EncodeAsType,
+	:: subxt :: ext :: subxt_core :: ext :: codec :: Decode,
+	:: subxt :: ext :: subxt_core :: ext :: codec :: Encode,
+	:: subxt :: ext :: subxt_core :: ext :: scale_decode :: DecodeAsType,
+	:: subxt :: ext :: subxt_core :: ext :: scale_encode :: EncodeAsType,
 	Debug,
 )]
-# [codec (crate = :: subxt :: ext :: codec)]
-#[decode_as_type(crate_path = ":: subxt :: ext :: scale_decode")]
-#[encode_as_type(crate_path = ":: subxt :: ext :: scale_encode")]
+# [codec (crate = :: subxt :: ext :: subxt_core :: ext :: codec)]
+#[decode_as_type(crate_path = ":: subxt :: ext :: subxt_core :: ext :: scale_decode")]
+#[encode_as_type(crate_path = ":: subxt :: ext :: subxt_core :: ext :: scale_encode")]
 pub struct OnDemandOrderPlaced {
+	pub para_id: Id,
+	pub spot_price: u128,
+	pub ordered_by: ::subxt::ext::subxt_core::utils::AccountId32,
+}
+
+#[derive(
+	:: subxt :: ext :: subxt_core :: ext :: codec :: Decode,
+	:: subxt :: ext :: subxt_core :: ext :: codec :: Encode,
+	:: subxt :: ext :: subxt_core :: ext :: scale_decode :: DecodeAsType,
+	:: subxt :: ext :: subxt_core :: ext :: scale_encode :: EncodeAsType,
+	Debug,
+)]
+# [codec (crate = :: subxt :: ext :: subxt_core :: ext :: codec)]
+#[decode_as_type(crate_path = ":: subxt :: ext :: subxt_core :: ext :: scale_decode")]
+#[encode_as_type(crate_path = ":: subxt :: ext :: subxt_core :: ext :: scale_encode")]
+pub struct OnDemandOrderPlacedV0 {
 	pub para_id: Id,
 	pub spot_price: u128,
 }
 
-impl ::subxt::events::StaticEvent for OnDemandOrderPlaced {
+impl ::subxt::ext::subxt_core::events::StaticEvent for OnDemandOrderPlaced {
+	const PALLET: &'static str = "OnDemandAssignmentProvider";
+	const EVENT: &'static str = "OnDemandOrderPlaced";
+}
+
+impl ::subxt::ext::subxt_core::events::StaticEvent for OnDemandOrderPlacedV0 {
 	const PALLET: &'static str = "OnDemandAssignmentProvider";
 	const EVENT: &'static str = "OnDemandOrderPlaced";
 }
