@@ -9063,7 +9063,7 @@ dependencies = [
 [[package]]
 name = "pallet-move"
 version = "0.1.0"
-source = "git+https://github.com/Magport/pallet-move?branch=main#3c477380e724de6c0290694874cce999cfa768d8"
+source = "git+https://github.com/Magport/pallet-move?branch=main#780b6eefee2933971492eefd9e5807db614e9c0d"
 dependencies = [
  "anyhow",
  "bcs 0.1.4",
@@ -9089,7 +9089,7 @@ dependencies = [
 [[package]]
 name = "pallet-move-rpc"
 version = "0.1.0"
-source = "git+https://github.com/Magport/pallet-move?branch=main#3c477380e724de6c0290694874cce999cfa768d8"
+source = "git+https://github.com/Magport/pallet-move?branch=main#780b6eefee2933971492eefd9e5807db614e9c0d"
 dependencies = [
  "frame-support",
  "jsonrpsee 0.20.3",

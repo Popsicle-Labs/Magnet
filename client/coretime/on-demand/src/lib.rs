@@ -493,13 +493,13 @@ pub async fn ondemand_event_task(
 			let ev_order_placed = event.as_event::<metadata::OnDemandOrderPlacedV0>();
 			if let Ok(order_placed_event) = ev_order_placed {
 				if let Some(ev) = order_placed_event {
-					log::info!(
-						"=====================Find OnDemandOrderPlaced event:{:?},{:?}================",
-						ev.para_id,
-						ev.spot_price,
-					);
 					let exp_id: u32 = para_id.into();
 					if ev.para_id.0 == exp_id {
+						log::info!(
+							"=====================Find OnDemandOrderPlaced event:{:?},{:?}================",
+							ev.para_id,
+							ev.spot_price,
+						);
 						// The orderer gets it from the slot by default.
 						let mut order_record_local = order_record.lock().await;
 						order_record_local.price = ev.spot_price;
