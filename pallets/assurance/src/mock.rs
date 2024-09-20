@@ -193,6 +193,7 @@ impl ExtBuilder {
 			.unwrap();
 		pallet_assurance::GenesisConfig::<Test> {
 			bid_threshold: 8u32,
+			enable: true,
 			_marker: Default::default(),
 		}
 		.assimilate_storage(&mut t)
