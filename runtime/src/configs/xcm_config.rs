@@ -1,24 +1,21 @@
-use super::{
-	AccountId, AllPalletsWithSystem, BTreeMap, Balances, ParachainInfo, ParachainSystem,
-	PolkadotXcm, Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin, WeightToFee, XcmpQueue,
-};
 use crate::{
+	governance::MagnetToStakingPot,
 	weights::pallet_xcm::WeightInfo,
 	xcms::{matches_token_ex::IsConcreteEx, xcm_weight::UsingComponentsEx},
-	MagnetToStakingPot,
+	AccountId, AllPalletsWithSystem, Balances, ParachainInfo, ParachainSystem, PolkadotXcm,
+	Runtime, RuntimeCall, RuntimeEvent, RuntimeOrigin, WeightToFee, XcmpQueue,
 };
 use frame_support::{
-	match_types, parameter_types,
+	parameter_types,
 	traits::{ConstU32, Contains, Everything, Nothing},
 	weights::Weight,
 };
 use frame_system::EnsureRoot;
 use pallet_xcm::XcmPassthrough;
 use polkadot_parachain_primitives::primitives::Sibling;
+use sp_std::collections::btree_map::BTreeMap;
 use xcm::latest::prelude::*;
-use xcm::latest::prelude::{
-	Asset as MultiAsset, InteriorLocation as InteriorMultiLocation, Location as MultiLocation,
-};
+use xcm::latest::prelude::{InteriorLocation as InteriorMultiLocation, Location as MultiLocation};
 use xcm_builder::{
 	AccountId32Aliases, AllowKnownQueryResponses, AllowTopLevelPaidExecutionFrom,
 	AllowUnpaidExecutionFrom, CurrencyAdapter, EnsureXcmOrigin, FixedWeightBounds,
@@ -153,6 +150,10 @@ impl xcm_executor::Config for XcmConfig {
 	type SafeCallFilter = Everything;
 	type Aliasers = Nothing;
 	type TransactionalProcessor = FrameTransactionalProcessor;
+	type HrmpNewChannelOpenRequestHandler = ();
+	type HrmpChannelAcceptedHandler = ();
+	type HrmpChannelClosingHandler = ();
+	type XcmRecorder = PolkadotXcm;
 }
 
 /// No local origins on this chain are allowed to dispatch XCM sends/executions.

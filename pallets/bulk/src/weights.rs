@@ -37,6 +37,8 @@ use core::marker::PhantomData;
 pub trait WeightInfo {
 	fn set_rpc_url() -> Weight;
 	fn create_record() -> Weight;
+	fn set_genesis_hash() -> Weight;
+	fn set_check_genesis_hash() -> Weight;
 }
 /// Weight functions for `pallet_bulk`.
 pub struct SubstrateWeight<T>(PhantomData<T>);
@@ -70,6 +72,32 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
+	/// Storage: `BulkPallet::GenesisHash` (r:0 w:1)
+	/// Proof: `BulkPallet::GenesisHash` (`max_values`: Some(1), `max_size`: Some(32), added: 527, mode: `MaxEncodedLen`)
+	/// The range of component `s` is `[0, 100]`.
+	fn set_genesis_hash() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `0`
+		//  Estimated: `0`
+		// Minimum execution time: 3_537_000 picoseconds.
+		Weight::from_parts(4_080_512, 0)
+			.saturating_add(Weight::from_parts(0, 0))
+			// Standard Error: 465
+			.saturating_add(Weight::from_parts(2, 0))
+			.saturating_add(T::DbWeight::get().writes(1))
+	}
+	/// Storage: `BulkPallet::CheckGenesisHash` (r:0 w:1)
+	/// Proof: `BulkPallet::CheckGenesisHash` (`max_values`: Some(1), `max_size`: Some(1), added: 496, mode: `MaxEncodedLen`)
+	/// The range of component `s` is `[0, 100]`.
+	fn set_check_genesis_hash() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `0`
+		//  Estimated: `0`
+		// Minimum execution time: 3_306_000 picoseconds.
+		Weight::from_parts(3_896_852, 0)
+			.saturating_add(Weight::from_parts(0, 0))
+			.saturating_add(T::DbWeight::get().writes(1))
+	}
 }
 
 impl WeightInfo for () {
@@ -89,6 +117,28 @@ impl WeightInfo for () {
 		//  Estimated: `0`
 		// Minimum execution time: 3_858_000 picoseconds.
 		Weight::from_parts(4_289_031, 0)
+			.saturating_add(Weight::from_parts(0, 0))
+			.saturating_add(RocksDbWeight::get().writes(1))
+	}
+
+	fn set_genesis_hash() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `0`
+		//  Estimated: `0`
+		// Minimum execution time: 3_537_000 picoseconds.
+		Weight::from_parts(4_080_512, 0)
+			.saturating_add(Weight::from_parts(0, 0))
+			// Standard Error: 465
+			.saturating_add(Weight::from_parts(2, 0))
+			.saturating_add(RocksDbWeight::get().writes(1))
+	}
+
+	fn set_check_genesis_hash() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `0`
+		//  Estimated: `0`
+		// Minimum execution time: 3_306_000 picoseconds.
+		Weight::from_parts(3_896_852, 0)
 			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(RocksDbWeight::get().writes(1))
 	}

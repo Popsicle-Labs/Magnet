@@ -20,9 +20,11 @@ use super::*;
 
 #[allow(unused)]
 use crate::Pallet as Bulk;
+use core::str::FromStr;
 use frame_benchmarking::{benchmarks, impl_benchmark_test_suite};
 use frame_system::RawOrigin;
 use pallet_broker::{CoreMask, RegionId};
+use sp_core::H256;
 
 mod test_sproof {
 	use sp_trie::StorageProof;
@@ -79,6 +81,22 @@ benchmarks! {
 	}: _(RawOrigin::Root, url.clone())
 	verify {
 		assert_eq!(RpcUrl::<T>::get(), Some(url));
+	}
+
+	set_genesis_hash {
+		let s in 0 .. 100;
+		let genesis_hash = H256::from_str("0x016f9d0bc355e718ce950727cd423d4915f34ded0a94f466242446b8865e061f").expect("genesis hash error.");
+	}: _(RawOrigin::Root, genesis_hash.clone())
+	verify {
+		assert_eq!(GenesisHash::<T>::get(), genesis_hash);
+	}
+
+	set_check_genesis_hash {
+		let s in 0 .. 100;
+		let check_genesis_hash = true;
+	}: _(RawOrigin::Root, check_genesis_hash)
+	verify {
+		assert_eq!(CheckGenesisHash::<T>::get(), check_genesis_hash);
 	}
 }
 

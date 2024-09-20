@@ -15,8 +15,7 @@
 // along with Polkadot. If not, see <http://www.gnu.org/licenses/>.
 
 //! Track configurations for governance.
-
-use super::*;
+use crate::{governance::origins, Balance, BlockNumber, RuntimeOrigin, CENTS, GRAND, MINUTES};
 
 const fn percent(x: i32) -> sp_arithmetic::FixedI64 {
 	sp_arithmetic::FixedI64::from_rational(x as u128, 100)

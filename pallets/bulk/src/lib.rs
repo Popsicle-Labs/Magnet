@@ -28,12 +28,11 @@ use frame_support::{
 	traits::Currency,
 };
 use frame_system::pallet_prelude::*;
-use mp_coretime_bulk::well_known_keys::broker_regions;
+use mp_coretime_bulk::{well_known_keys::broker_regions, RegionRecord, RegionRecordV0};
 use mp_coretime_common::{
 	chain_state_snapshot::GenericStateProof, well_known_keys::SYSTEM_BLOCKHASH_GENESIS,
 };
 pub use pallet::*;
-use pallet_broker::RegionRecord;
 use sp_runtime::sp_std::{prelude::*, vec};
 use weights::WeightInfo;
 
@@ -115,6 +114,16 @@ pub mod pallet {
 	#[pallet::getter(fn genesis_hash)]
 	pub type GenesisHash<T> = StorageValue<_, PHash, ValueQuery>;
 
+	#[pallet::type_value]
+	pub fn CheckGenesisHashOnEmpty<T: Config>() -> bool {
+		false
+	}
+
+	/// Is check coretime parachain genesis block hash or not.
+	#[pallet::storage]
+	#[pallet::getter(fn check_genesis_hash)]
+	pub type CheckGenesisHash<T> = StorageValue<_, bool, ValueQuery, CheckGenesisHashOnEmpty<T>>;
+
 	/// Bulk purchase Information Map.
 	#[pallet::storage]
 	#[pallet::getter(fn bulk_records)]
@@ -125,6 +134,7 @@ pub mod pallet {
 	pub struct GenesisConfig<T: Config> {
 		pub rpc_url: BoundedVec<u8, T::MaxUrlLength>,
 		pub genesis_hash: PHash,
+		pub check_genesis_hash: bool,
 		pub _marker: PhantomData<T>,
 	}
 
@@ -133,6 +143,7 @@ pub mod pallet {
 			Self {
 				rpc_url: BoundedVec::new(),
 				genesis_hash: Default::default(),
+				check_genesis_hash: false,
 				_marker: Default::default(),
 			}
 		}
@@ -143,6 +154,7 @@ pub mod pallet {
 		fn build(&self) {
 			RpcUrl::<T>::put(&self.rpc_url);
 			GenesisHash::<T>::put(&self.genesis_hash);
+			CheckGenesisHash::<T>::put(&self.check_genesis_hash);
 		}
 	}
 
@@ -234,7 +246,17 @@ pub mod pallet {
 				duration,
 				start_relaychain_height,
 				end_relaychain_height,
+				record_index,
 			} = data;
+
+			let old_record_index = RecordIndex::<T>::get();
+			if record_index != old_record_index {
+				let total_weight = T::DbWeight::get().reads_writes(1, 0);
+				return Ok(PostDispatchInfo {
+					actual_weight: Some(total_weight),
+					pays_fee: Pays::No,
+				});
+			}
 
 			let storage_proof = p_storage_proof.ok_or(Error::<T>::ProofNone)?;
 			// Create coretime parachain root proof
@@ -245,26 +267,42 @@ pub mod pallet {
 
 			let region_key = broker_regions(region_id);
 			// Read RegionRecord from proof.
-			let region_record = storage_rooted_proof
+			let p_region_record = storage_rooted_proof
 				.read_entry::<RegionRecord<T::AccountId, BalanceOf<T>>>(region_key.as_slice(), None)
-				.ok()
-				.ok_or(Error::<T>::FailedReading)?;
+				.ok();
+			let (balance, purchaser) = if let Some(region_record) = p_region_record {
+				let balance = region_record.paid.ok_or(Error::<T>::PurchaserNone)?;
+				let purchaser = region_record.owner.ok_or(Error::<T>::PurchaserNone)?;
+				(balance, purchaser)
+			} else {
+				let region_record = storage_rooted_proof
+					.read_entry::<RegionRecordV0<T::AccountId, BalanceOf<T>>>(
+						region_key.as_slice(),
+						None,
+					)
+					.ok()
+					.ok_or(Error::<T>::FailedReading)?;
+				let balance = region_record.paid.ok_or(Error::<T>::PurchaserNone)?;
+				let purchaser = region_record.owner;
+				(balance, purchaser)
+			};
 
-			let genesis_hash_key = SYSTEM_BLOCKHASH_GENESIS;
-			let genesis_hash = storage_rooted_proof
-				.read_entry::<PHash>(genesis_hash_key, None)
-				.ok()
-				.ok_or(Error::<T>::FailedReading)?;
+			if Self::check_genesis_hash() {
+				let genesis_hash_key = SYSTEM_BLOCKHASH_GENESIS;
+				let genesis_hash = storage_rooted_proof
+					.read_entry::<PHash>(genesis_hash_key, None)
+					.ok()
+					.ok_or(Error::<T>::FailedReading)?;
 
-			let stored_hash = GenesisHash::<T>::get();
-			if genesis_hash != stored_hash {
-				Err(Error::<T>::GenesisHashInconsistency)?;
+				let stored_hash = GenesisHash::<T>::get();
+				if genesis_hash != stored_hash {
+					Err(Error::<T>::GenesisHashInconsistency)?;
+				}
 			}
+
 			let real_start_relaychain_height = Self::relaychain_block_number();
 			let real_end_relaychain_height = real_start_relaychain_height + duration;
-			let old_record_index = RecordIndex::<T>::get();
-			let balance = region_record.paid.ok_or(Error::<T>::PurchaserNone)?;
-			let purchaser = region_record.owner;
+
 			// Create record of purchase coretime.
 			BulkRecords::<T>::insert(
 				old_record_index,
@@ -282,7 +320,7 @@ pub mod pallet {
 			Self::deposit_event(Event::RecordCreated {
 				purchaser,
 				price: balance,
-				duration: region_record.end,
+				duration,
 				start_relaychain_height,
 				end_relaychain_height,
 				real_start_relaychain_height,
@@ -306,6 +344,34 @@ pub mod pallet {
 			T::UpdateOrigin::ensure_origin(origin)?;
 
 			RpcUrl::<T>::put(url.clone());
+
+			Ok(())
+		}
+
+		/// Set coretime parachain genesis hash.
+		///
+		/// Parameters:
+		/// - `genesis_hash`: genesis hash.
+		#[pallet::call_index(2)]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::set_genesis_hash())]
+		pub fn set_genesis_hash(origin: OriginFor<T>, genesis_hash: PHash) -> DispatchResult {
+			T::UpdateOrigin::ensure_origin(origin)?;
+
+			GenesisHash::<T>::put(genesis_hash);
+
+			Ok(())
+		}
+
+		/// Set check coretime parachain genesis hash.
+		///
+		/// Parameters:
+		/// - `check`: check genesis hash.
+		#[pallet::call_index(3)]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::set_check_genesis_hash())]
+		pub fn set_check_genesis_hash(origin: OriginFor<T>, check: bool) -> DispatchResult {
+			T::UpdateOrigin::ensure_origin(origin)?;
+
+			CheckGenesisHash::<T>::put(check);
 
 			Ok(())
 		}

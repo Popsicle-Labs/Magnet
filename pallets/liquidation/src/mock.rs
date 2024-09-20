@@ -21,7 +21,6 @@ use sp_runtime::{
 
 use crate::OrderGasCost;
 use frame_system::pallet_prelude::BlockNumberFor;
-use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_std::{cell::RefCell, collections::btree_map::BTreeMap};
 use xcm::latest::{Assets, Location, SendError, SendResult, SendXcm, Xcm, XcmHash};
 use xcm::prelude::*;
@@ -92,6 +91,11 @@ impl system::Config for Test {
 	type RuntimeCall = RuntimeCall;
 	type RuntimeOrigin = RuntimeOrigin;
 	type RuntimeTask = ();
+	type SingleBlockMigrations = ();
+	type MultiBlockMigrator = ();
+	type PreInherents = ();
+	type PostInherents = ();
+	type PostTransactions = ();
 }
 
 parameter_types! {
@@ -233,6 +237,10 @@ impl xcm_executor::Config for XcmConfig {
 	type SafeCallFilter = Everything;
 	type Aliasers = Nothing;
 	type TransactionalProcessor = ();
+	type HrmpNewChannelOpenRequestHandler = ();
+	type HrmpChannelAcceptedHandler = ();
+	type HrmpChannelClosingHandler = ();
+	type XcmRecorder = ();
 }
 
 pub type LocalOriginToLocation = SignedToAccountId32<RuntimeOrigin, AccountId, AnyNetwork>;
@@ -384,7 +392,6 @@ impl ExtBuilder {
 			profit_distribution_cycle: self.profit_distribution_cycle,
 		};
 		liquidation_config.assimilate_storage(&mut storage).unwrap();
-
 		let mut ext = sp_io::TestExternalities::new(storage);
 		ext.execute_with(|| System::set_block_number(1));
 		ext

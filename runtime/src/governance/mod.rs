@@ -18,24 +18,29 @@
 
 //Modified by Alex Wang 2023/11
 
-use super::*;
 use frame_support::{
 	parameter_types,
-	traits::{ConstU16, EitherOf},
+	traits::{ConstU16, Currency, EitherOf, OnUnbalanced},
 };
-use frame_system::EnsureRootWithSuccess;
-
-mod origins;
+use frame_system::{EnsureRoot, EnsureRootWithSuccess};
+use sp_core::{crypto::AccountId32, ConstU32};
+pub mod origins;
 pub use origins::{
 	pallet_custom_origins, AuctionAdmin, Fellows, FellowshipAdmin, FellowshipExperts,
 	FellowshipInitiates, FellowshipMasters, GeneralAdmin, LeaseAdmin, ReferendumCanceller,
 	ReferendumKiller, Spender, StakingAdmin, Treasurer, WhitelistedCaller,
 };
-mod tracks;
+pub mod tracks;
 pub use tracks::TracksInfo;
-mod fellowship;
-pub use fellowship::{FellowshipCollectiveInstance, FellowshipReferendaInstance};
-
+pub mod fellowship;
+// pub use fellowship::{FellowshipCollectiveInstance, FellowshipReferendaInstance};
+use crate::{
+	weights, AccountId, Balance, Balances, BlockNumber, Preimage, Referenda, Runtime, RuntimeCall,
+	RuntimeEvent, Scheduler, CENTS, DAYS,
+};
+pub use pallet_balances::{Call as BalancesCall, NegativeImbalance};
+pub use parachains_common::impls::{AccountIdOf, DealWithFees};
+use sp_std::marker::PhantomData;
 parameter_types! {
 	pub const VoteLockingPeriod: BlockNumber = 7 * DAYS;
 }
@@ -72,6 +77,20 @@ impl pallet_whitelist::Config for Runtime {
 		EitherOf<EnsureRootWithSuccess<Self::AccountId, ConstU16<65535>>, Fellows>;
 	type DispatchWhitelistedOrigin = EitherOf<EnsureRoot<Self::AccountId>, WhitelistedCaller>;
 	type Preimages = Preimage;
+}
+
+pub struct MagnetToStakingPot<R>(PhantomData<R>);
+impl<R> OnUnbalanced<NegativeImbalance<R>> for MagnetToStakingPot<R>
+where
+	R: pallet_balances::Config,
+	AccountIdOf<R>: From<polkadot_primitives::AccountId> + Into<polkadot_primitives::AccountId>,
+	<R as frame_system::Config>::RuntimeEvent: From<pallet_balances::Event<R>>,
+	R::AccountId: From<AccountId32>,
+{
+	fn on_nonzero_unbalanced(amount: NegativeImbalance<R>) {
+		let staking_pot = mp_system::BASE_ACCOUNT;
+		<pallet_balances::Pallet<R>>::resolve_creating(&staking_pot.into(), amount);
+	}
 }
 
 impl pallet_referenda::Config for Runtime {

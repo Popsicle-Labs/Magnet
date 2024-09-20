@@ -11,9 +11,7 @@ log = { workspace = true, default-features = false }
 hex-literal = { workspace = true }
 async-trait = { workspace = true, optional = true }
 scale-info = { workspace = true, default-features = false }
-codec = { package = "parity-scale-codec", workspace = true, default-features = false, features = [
-	"derive","full", "bit-vec"
-] }
+codec = {  workspace = true }
 sp-api = { workspace = true, default-features = false}
 sp-runtime = { workspace = true, default-features = false }
 sp-inherents = { workspace = true, default-features = false }
