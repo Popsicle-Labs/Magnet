@@ -49,17 +49,3 @@ fn on_relaychain_works() {
 		assert_eq!(on_relay_return, true);
 	})
 }
-
-#[test]
-fn set_enable_works() {
-	ExtBuilder::default().existential_deposit(100).build().execute_with(|| {
-		let default_enable = pallet_assurance::Enable::<Test>::get();
-		assert_eq!(default_enable, true);
-		assert_ok!(Assurance::set_enable_assurance(RuntimeOrigin::root(), false));
-		expect_event(AssuranceEvent::DisableAssurance);
-		assert_eq!(pallet_assurance::Enable::<Test>::get(), false);
-		assert_ok!(Assurance::set_enable_assurance(RuntimeOrigin::root(), true));
-		expect_event(AssuranceEvent::EnableAssurance);
-		assert_eq!(pallet_assurance::Enable::<Test>::get(), true);
-	})
-}

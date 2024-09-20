@@ -226,13 +226,12 @@ where
 										let constant_query =
 											subxt::dynamic::constant("Broker", "TimeslicePeriod");
 
-										let time_slice = api
-											.constants()
-											.at(&constant_query)?
-											.to_value()?
-											.as_u128()
-											.expect("coretime parachain time slice none")
-											as u32;
+										let time_slice =
+											api.constants()
+												.at(&constant_query)?
+												.to_value()?
+												.as_u128()
+												.expect("coretime parachain time slice none") as u32;
 
 										item.end_relaychain_height =
 											ev.when + item.duration * time_slice;
