@@ -288,7 +288,10 @@ pub mod pallet {
 
 			let (collator, real_gas_cost) = match T::OrderGasCost::gas_cost(n) {
 				Ok(cost) => match cost {
-					Some((collator, real_gas_cost)) => (collator, real_gas_cost),
+					Some((collator, real_gas_cost)) => {
+						let adjusted_gas_cost = real_gas_cost * PARACHAIN_TO_RELAYCHAIN_UNIT;
+						(collator, adjusted_gas_cost)
+					},
 					None => return,
 				},
 				Err(_) => {
@@ -670,7 +673,8 @@ pub mod pallet {
 			let total_existing_operation_ratio: u32 =
 				OperationRatios::<T>::iter().map(|(_, r)| r).sum();
 			let total_ratio = system_ratio
-				+ treasury_ratio + collator_ratio
+				+ treasury_ratio
+				+ collator_ratio
 				+ total_existing_operation_ratio
 				+ ratio;
 			log::info!("3 -+-+-+-+-+ set operation ratio, total ratio:{:?}, system_ratio:{:?}, treasury_ratio:{:?}, collator_ratio:{:?}, operation account:{:?}, op_ratio:{:?}",
