@@ -208,3 +208,19 @@ pub async fn order_slot<P: Pair>(
 		None
 	}
 }
+
+/// Get the collator of this slot.
+pub async fn order_slot_author<P: Pair>(
+	idx: u32,
+	authorities: &[AuthorityId<P>],
+) -> Option<P::Public> {
+	if authorities.is_empty() {
+		return None;
+	}
+
+	let expected_author = authorities.get(idx as usize).expect(
+		"authorities not empty; index constrained to list length;this is a valid index; qed",
+	);
+
+	Some(expected_author.clone())
+}

@@ -368,23 +368,28 @@ where
 			}
 		}
 	}
-	if let Some(author) = collator_public {
-		//your turn
-		if can_order {
-			if order_period {
-				if order_record_local.order_status == OrderStatus::Init {
-					log::info!("============place order, type:{:?}", order_type);
-					order_record_local.relay_parent = p_hash;
-					order_record_local.relay_height = height;
-					order_record_local.author_pub = Some(author);
-					order_record_local.txs = get_txs(transaction_pool).await;
-					let order_result =
-						try_place_order::<Balance>(keystore, para_id, url, place_price).await;
-					order_record_local.order_status = OrderStatus::Order;
-					if order_result.is_ok() {
-						log::info!("===========place order successfully",);
-					} else {
-						log::info!("===========place order error:{:?}", order_result);
+
+	if order_period {
+		let solt_author =
+			mc_coretime_common::order_slot_author::<AuthorityPair>(idx, &authorities).await;
+		if let Some(author) = solt_author {
+			order_record_local.relay_parent = p_hash;
+			order_record_local.relay_height = height;
+			order_record_local.author_pub = Some(author);
+			order_record_local.txs = get_txs(transaction_pool).await;
+			//your turn
+			if collator_public.is_some() {
+				if can_order {
+					if order_record_local.order_status == OrderStatus::Init {
+						log::info!("============place order, type:{:?}", order_type);
+						let order_result =
+							try_place_order::<Balance>(keystore, para_id, url, place_price).await;
+						order_record_local.order_status = OrderStatus::Order;
+						if order_result.is_ok() {
+							log::info!("===========place order successfully",);
+						} else {
+							log::info!("===========place order error:{:?}", order_result);
+						}
 					}
 				}
 			}
@@ -495,13 +500,13 @@ pub async fn ondemand_event_task(
 			let ev_order_placed = event.as_event::<metadata::OnDemandOrderPlacedV0>();
 			if let Ok(order_placed_event) = ev_order_placed {
 				if let Some(ev) = order_placed_event {
-					log::info!(
-						"=====================Find OnDemandOrderPlaced event:{:?},{:?}================",
-						ev.para_id,
-						ev.spot_price,
-					);
 					let exp_id: u32 = para_id.into();
 					if ev.para_id.0 == exp_id {
+						log::info!(
+							"=====================Find OnDemandOrderPlaced event:{:?},{:?}================",
+							ev.para_id,
+							ev.spot_price,
+						);
 						// The orderer gets it from the slot by default.
 						let mut order_record_local = order_record.lock().await;
 						order_record_local.price = ev.spot_price;

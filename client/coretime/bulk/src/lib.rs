@@ -78,13 +78,7 @@ where
 
 	let rpc_url = std::str::from_utf8(&url)?;
 
-	let api_client = OnlineClient::<PolkadotConfig>::from_url(rpc_url).await;
-
-	let api = if let Ok(ok_api) = api_client {
-		ok_api
-	} else {
-		return Ok(());
-	};
+	let api = OnlineClient::<PolkadotConfig>::from_url(rpc_url).await?;
 
 	let mut blocks_sub = api.blocks().subscribe_finalized().await?;
 
@@ -226,12 +220,13 @@ where
 										let constant_query =
 											subxt::dynamic::constant("Broker", "TimeslicePeriod");
 
-										let time_slice =
-											api.constants()
-												.at(&constant_query)?
-												.to_value()?
-												.as_u128()
-												.expect("coretime parachain time slice none") as u32;
+										let time_slice = api
+											.constants()
+											.at(&constant_query)?
+											.to_value()?
+											.as_u128()
+											.expect("coretime parachain time slice none")
+											as u32;
 
 										item.end_relaychain_height =
 											ev.when + item.duration * time_slice;
@@ -262,12 +257,9 @@ pub async fn run_coretime_bulk_task<P, R, Block>(
 {
 	let bulk_task = async move {
 		loop {
-			let result =
+			let _ =
 				coretime_bulk_task(&*parachain, relay_chain.clone(), para_id, bulk_record.clone())
 					.await;
-			if let Err(err) = result {
-				log::info!("==============run_coretime_bulk_task error:{:?}", err);
-			}
 		}
 	};
 	select! {
